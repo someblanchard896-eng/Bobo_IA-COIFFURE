@@ -1,19 +1,16 @@
 import streamlit as st
+import urllib.parse
 import json
 import os
-import urllib.parse
+from datetime import datetime
 
-# --- CONFIGURATION DE LA PAGE ---
-st.set_page_config(page_title="Blanco Beauté Connect", page_icon="✨", layout="centered")
-
+# --- BASE DE DONNÉES PRIVÉE ---
 FICHIER_DATA = "data_salons_blanco.json"
 
-# --- CHARGEMENT DES DONNÉES ---
-def charger_data():
+def charger_base_de_donnees():
     if os.path.exists(FICHIER_DATA):
         with open(FICHIER_DATA, "r", encoding="utf-8") as f:
             return json.load(f)
-    # Données par défaut si le fichier n'existe pas
     return {
         "Ouagadougou": {
             "Zone A (Centre/Nord)": ["Koulouba", "Tampouy", "Somgandé", "Tanghin", "Paspanga"],
@@ -25,135 +22,112 @@ def charger_data():
             "Zone 2 (Est/Sud)": ["Secteur 22", "Secteur 25", "Secteur 24", "Secteur 23", "Bolomakoté"],
             "Zone 3 (Nord/Ouest)": ["Belle-Ville", "Secteur 9", "Secteur 15", "Secteur 10", "Kuinima"]
         },
-        "SALONS": [],
-        "GAIN_BLANCO": 0
+        "SALONS_ENREGISTRES": [],
+        "COMMISSIONS_TOTALES": 0,
+        "HISTORIQUE_GAINS": [] # <-- NOUVEAU : Pour le suivi précis
     }
 
-# --- SAUVEGARDE DES DONNÉES ---
 def sauvegarder(data):
     with open(FICHIER_DATA, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
 
-# Initialisation des données
-data = charger_data()
+db = charger_base_de_donnees()
 
-# --- INTERFACE PRINCIPALE ---
-st.title("✨ Blanco Beauté Connect")
-st.markdown("---")
+# --- TRADUCTIONS (TES SECRETS) ---
+TEXTES_WA = {
+    "Français": "Bonjour Madame la Directrice, une nouvelle réservation de",
+    "Dioula": "I ni sogoma ba, résérvation kura do don ka bò Blanco fè,",
+    "Mooré": "Ne y yibeogo maam, tibo-n-taase n yaa Blanco n tooli,"
+}
 
-# Menu latéral
-menu = st.sidebar.selectbox("Menu", ["🏠 Accueil / Réservation", "🔐 Espace Admin (Blanco.10)"])
+st.title("✨ BLANCO BEAUTÉ CONNECT")
 
-# --- PARTIE CLIENT : ACCUEIL ---
-if menu == "🏠 Accueil / Réservation":
-    st.subheader("📍 Trouvez votre salon")
+menu = st.sidebar.selectbox("Aller vers...", ["🏠 Accueil Clients", "🔐 Gestion Privée (Blanco)"])
+
+if menu == "🏠 Accueil Clients":
+    st.subheader("📍 Trouvez votre salon à proximité")
+    v_nom = st.selectbox("Ville", ["Ouagadougou", "Bobo-Dioulasso"])
+    z_nom = st.selectbox("Zone", list(db[v_nom].keys()))
+    s_nom = st.selectbox("Secteur", db[v_nom][z_nom])
+
+    liste = [s for s in db["SALONS_ENREGISTRES"] if s['ville'] == v_nom and s['secteur'] == s_nom]
     
-    col1, col2 = st.columns(2)
-    with col1:
-        ville = st.selectbox("Ville", ["Ouagadougou", "Bobo-Dioulasso"])
-    with col2:
-        zone = st.selectbox("Zone", list(data[ville].keys()))
-    
-    secteur = st.selectbox("Secteur", data[ville][zone])
-    
-    st.markdown("---")
-    
-    # Filtrer les salons du secteur
-    salons_dispo = [s for s in data["SALONS"] if s['ville'] == ville and s['secteur'] == secteur]
-    
-    if not salons_dispo:
-        st.warning(f"Aucun salon enregistré à {secteur} pour le moment.")
+    if not liste:
+        st.info(f"Aucun salon enregistré à {s_nom} pour le moment.")
     else:
-        for i, s in enumerate(salons_dispo):
-            with st.container():
-                st.write(f"### 💇‍♀️ {s['nom']} ({s['type']})")
-                st.write(f"💰 Prix : **{s['prix']} FCFA**")
+        for i, s in enumerate(liste):
+            with st.container(border=True):
+                st.subheader(f"💇‍♀️ {s['nom'].upper()}")
                 
-                # Options de réservation
-                lang_opt = ["Français", "Mooré" if ville=="Ouagadougou" else "Dioula"]
-                lang = st.radio(f"Langue pour {s['nom']}", lang_opt, horizontal=True, key=f"lang_{i}")
+                # AFFICHAGE IMAGE DIRECTE
+                if s.get('image'):
+                    st.image(s['image'], use_container_width=True)
                 
-                mariage = st.checkbox("Forfait Marié(e) 💍", key=f"mar_{i}")
+                # AFFICHAGE VIDÉO / TIKTOK
+                if s.get('video'):
+                    st.video(s['video'])
                 
-                nom_c = st.text_input("Votre Nom", key=f"nom_{i}", placeholder="Ex: Adama Traoré")
-                date_h = st.text_input("Date & Heure souhaitées", value="Samedi 10h", key=f"date_{i}")
+                st.write(f"💰 Prix moyen : **{s['prix']} FCFA**")
                 
-                # Bouton de réservation WhatsApp
+                langues = ["Français", "Dioula"] if v_nom == "Bobo-Dioulasso" else ["Français", "Mooré"]
+                lang_sel = st.radio(f"Langue du message ({s['nom']})", langues, key=f"lang_{i}", horizontal=True)
+                nom_c = st.text_input("Votre Nom complet", key=f"nom_{i}")
+                
                 if st.button(f"Réserver chez {s['nom']}", key=f"btn_{i}", type="primary"):
                     if nom_c:
-                        # Construction du message selon la langue
-                        if lang == "Français":
-                            intro = "Bonjour,"
-                        elif lang == "Dioula":
-                            intro = "I ni sogoma,"
-                        else: # Mooré
-                            intro = "Ne y yibeogo,"
-                            
-                        type_rdv = "Marié(e)" if mariage else "Simple"
+                        intro = TEXTES_WA[lang_sel]
+                        msg = f"{intro} {nom_c}.\n📍 Secteur : {s_nom}\n💰 Prix : {s['prix']} F\nRéservé via Blanco."
+                        link = f"https://wa.me/{s['whatsapp']}?text={urllib.parse.quote(msg)}"
                         
-                        msg = f"{intro} réservation via Blanco pour {nom_c}. Type: {s['type']} ({type_rdv}) le {date_h}. Prix: {s['prix']}F."
+                        # MISE À JOUR DES GAINS AVEC PRÉCISION
+                        db["COMMISSIONS_TOTALES"] += 100
+                        now = datetime.now().strftime("%d/%m/%Y %H:%M")
+                        db["HISTORIQUE_GAINS"].append(f"100 F - Salon {s['nom']} ({now})")
+                        sauvegarder(db)
                         
-                        # Création du lien WhatsApp (wa.me)
-                        # S'assure que le numéro WhatsApp commence par 226
-                        wa_num = s['whatsapp']
-                        if not wa_num.startswith('226') and len(wa_num) == 8:
-                            wa_num = '226' + wa_num
-                            
-                        link = f"https://wa.me/{wa_num}?text={urllib.parse.quote(msg)}"
-                        
-                        # Incrémentation des gains
-                        data["GAIN_BLANCO"] += 100
-                        sauvegarder(data)
-                        
-                        st.success("Redirection vers WhatsApp...")
-                        st.markdown(f'<meta http-equiv="refresh" content="0;URL={link}">', unsafe_allow_html=True)
+                        st.success("✅ Réservation prête !")
+                        st.link_button("🟢 CONFIRMER SUR WHATSAPP", link)
                     else:
-                        st.error("Veuillez entrer votre nom avant de réserver.")
-            st.markdown("---")
+                        st.error("Veuillez entrer votre nom.")
 
-# --- PARTIE ADMIN : ESPACE BLANCO ---
-elif menu == "🔐 Espace Admin (Blanco.10)":
-    st.subheader("Authentification")
-    password = st.text_input("Code d'accès", type="password")
-    
-    if password == "Blanco.10":
-        st.success(f"Bienvenue Blanco ! Vos gains totaux sont de : **{data['GAIN_BLANCO']} FCFA** 💸")
-        st.markdown("---")
+elif menu == "🔐 Gestion Privée (Blanco)":
+    st.subheader("Accès réservé")
+    password_input = st.text_input("Entrez le code secret :", type="password")
+
+    if password_input == "Blanco.10":
+        st.success("Bonjour Blanco !")
+        col_g1, col_g2 = st.columns(2)
+        col_g1.metric("💰 Total des Gains", f"{db['COMMISSIONS_TOTALES']} FCFA")
         
-        # Le formulaire d'ajout (maintenant bien présent !)
-        with st.expander("➕ AJOUTER UN NOUVEAU SALON", expanded=True):
-            v_add = st.selectbox("Ville ", ["Ouagadougou", "Bobo-Dioulasso"])
-            z_add = st.selectbox("Zone ", list(data[v_add].keys()))
-            s_add = st.selectbox("Secteur ", data[v_add][z_add])
-            nom_add = st.text_input("Nom du Salon")
-            type_add = st.selectbox("Type", ["Coiffure", "Maquillage"])
-            prix_add = st.text_input("Prix (en FCFA)")
-            wa_add = st.text_input("WhatsApp (ex: 22670000000)")
+        with col_g2.expander("Détails des gains"):
+            if db.get("HISTORIQUE_GAINS"):
+                for g in reversed(db["HISTORIQUE_GAINS"]):
+                    st.write(f"· {g}")
+            else:
+                st.write("Aucun gain pour le moment.")
+        
+        st.markdown("---")
+        st.write("### ➕ Ajouter un partenaire & Publicité (Images/Vidéos)")
+        with st.form("form_admin", clear_on_submit=True):
+            v_a = st.selectbox("Ville ", ["Ouagadougou", "Bobo-Dioulasso"])
+            z_a = st.selectbox("Zone ", list(db[v_a].keys()))
+            s_a = st.selectbox("Secteur ", db[v_a][z_a])
+            nom_s = st.text_input("Nom du Salon")
+            prix_s = st.text_input("Prix moyen")
+            wa_s = st.text_input("Numéro WhatsApp (226...)")
             
-            if st.button("✅ Enregistrer le Salon définitivement"):
-                if nom_add and prix_add and wa_add:
-                    # Ajout des données
-                    data["SALONS"].append({
-                        "ville": v_add,
-                        "secteur": s_add,
-                        "nom": nom_add, 
-                        "type": type_add,
-                        "prix": prix_add,
-                        "whatsapp": wa_add
-                    })
-                    sauvegarder(data)
-                    st.balloons() # Petite animation de succès
-                    st.success(f"Salon '{nom_add}' ajouté avec succès ! Actualisez l'Accueil pour le voir.")
-                else:
-                    st.error("Veuillez remplir le Nom, le Prix et le WhatsApp.")
-                    
-        # Option pour réinitialiser les gains (cachée en bas)
-        with st.expander("🗑️ Zone Danger (Réinitialiser les gains)"):
-            if st.button("Mettre les gains à 0 F"):
-                data["GAIN_BLANCO"] = 0
-                sauvegarder(data)
-                st.warning("Gains remis à 0.")
-                st.rerun()
+            st.write("🖼️ **Médias du Salon**")
+            img_s = st.text_input("Lien de l'IMAGE (ex: lien direct de la coiffure)")
+            vid_s = st.text_input("Lien VIDÉO (TikTok ou MP4)")
 
-    elif password:
-        st.error("Code incorrect.")
+            if st.form_submit_button("Enregistrer définitivement"):
+                if nom_s and wa_s:
+                    db["SALONS_ENREGISTRES"].append({
+                        "ville": v_a, "secteur": s_a, "nom": nom_s,
+                        "prix": prix_s, "whatsapp": wa_s,
+                        "image": img_s if img_s else None,
+                        "video": vid_s if vid_s else None
+                    })
+                    sauvegarder(db)
+                    st.balloons()
+                    st.success(f"Salon {nom_s} ajouté avec succès !")
