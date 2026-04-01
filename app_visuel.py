@@ -9,8 +9,35 @@ FICHIER_DATA = "data_salons_blanco.json"
 
 def charger_base_de_donnees():
     if os.path.exists(FICHIER_DATA):
-        with open(FICHIER_DATA, "r", encoding="utf-8") as f:
-            return json.load(f)
+        try:
+            with open(FICHIER_DATA, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                # Sécurité : si ces clés manquent, on les ajoute
+                if "SALONS_ENREGISTRES" not in data:
+                    data["SALONS_ENREGISTRES"] = []
+                if "COMMISSIONS_TOTALES" not in data:
+                    data["COMMISSIONS_TOTALES"] = 0
+                if "HISTORIQUE_GAINS" not in data:
+                    data["HISTORIQUE_GAINS"] = []
+                return data
+        except:
+            pass # Si le fichier est corrompu, on recharge par défaut
+            
+    return {
+        "Ouagadougou": {
+            "Zone A (Centre/Nord)": ["Koulouba", "Tampouy", "Somgandé", "Tanghin", "Paspanga"],
+            "Zone B (Sud/Est)": ["Ouaga 2000", "Patte d'Oie", "Dassasgho", "Wemtenga", "Dagnoën"],
+            "Zone C (Ouest)": ["Pissy", "Gounghin", "Larlé", "Cissin", "Rimkieta"]
+        },
+        "Bobo-Dioulasso": {
+            "Zone 1 (Centre/Sya)": ["Secteur 1", "Secteur 2", "Secteur 5", "Secteur 4", "Accart-ville"],
+            "Zone 2 (Est/Sud)": ["Secteur 22", "Secteur 25", "Secteur 24", "Secteur 23", "Bolomakoté"],
+            "Zone 3 (Nord/Ouest)": ["Belle-Ville", "Secteur 9", "Secteur 15", "Secteur 10", "Kuinima"]
+        },
+        "SALONS_ENREGISTRES": [], # La liste vide par défaut
+        "COMMISSIONS_TOTALES": 0,
+        "HISTORIQUE_GAINS": []
+    }
     return {
         "Ouagadougou": {
             "Zone A (Centre/Nord)": ["Koulouba", "Tampouy", "Somgandé", "Tanghin", "Paspanga"],
