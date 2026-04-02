@@ -41,9 +41,26 @@ if menu == "🏠 Accueil":
     v_nom = st.selectbox("Ville", ["Ouagadougou", "Bobo-Dioulasso"])
     
     # On s'assure que la ville existe dans la DB pour éviter l'erreur
-    if v_nom in db:
-        z_nom = st.selectbox("Zone", list(db[v_nom].keys()))
-        s_nom = st.selectbox("Secteur", db[v_nom][z_nom])
+   # --- NOUVELLE SELECTION DES QUARTIERS ---
+        if v_nom == "Bobo-Dioulasso":
+            options_bobo = [
+                "Secteur 1 (Dioulassoba)", "Secteur 2 (Dogona / Accart-ville)", "Secteur 3 (Tounouma)", 
+                "Secteur 4 (Koko)", "Secteur 5 (Kyé)", "Secteur 6 (Koua)", "Secteur 7 (Bolomakoté)", 
+                "Secteur 8 (Sikasso-Cira)", "Secteur 9 (Sya/Kuin-Nima)", "Secteur 10 (Accart-ville Nord, Yéguéré)", 
+                "Secteur 11 (Colma)", "Secteur 12 (Bolomakoté)", "Secteur 13 (Saint-Étienne)", 
+                "Secteur 14 (Bindougousso)", "Secteur 15 (Ouezzin-Ville)", "Secteur 17 (Sarfalao)", 
+                "Secteur 21 (Arrond. 7)", "Secteur 22 (Stade Sangoulé Lamizana)", "Secteur 23 (Zone résidentielle)",
+                "Secteur 24 (Belle-Ville)", "Secteur 25 (Zone d'extension)", "Secteur 31 (Route de Bama)"
+            ]
+            s_nom = st.selectbox("Secteur / Quartier à Bobo", options=options_bobo, index=None, placeholder="Tapez ou choisissez...")
+        
+        else:
+            options_ouaga = [
+                "Ouaga 2000", "Pissy", "Tampouy", "Dassasgho", "Patte d'Oie", "Gounghin", 
+                "Somgandé", "Karpala", "Cissin", "Larlé", "Koulouba", "Zogona", "Wemtenga",
+                "Kalgondin", "Rimkiéta", "Nagrin", "Saaba", "Hamdalaye", "Balkuy"
+            ]
+            s_nom = st.selectbox("Quartier à Ouaga", options=options_ouaga, index=None, placeholder="Tapez le nom du quartier...")
     else:
         st.error("Données de ville manquantes.")
         st.stop()
