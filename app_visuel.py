@@ -21,7 +21,14 @@ def charger_donnees():
         return pd.DataFrame(columns=['nom', 'type', 'ville', 'secteur', 'tel', 'photo_url', 'revenu'])
 
 def enregistrer_donnees(df):
-    conn.update(spreadsheet=url_gsheet, data=df)
+    try:
+        # On tente l'enregistrement direct
+        conn.update(spreadsheet=url_gsheet, data=df)
+        st.success("✅ Enregistré dans le Cloud !")
+    except:
+        # Si Google bloque l'écriture, on affiche un message d'aide
+        st.error("🔒 Google bloque l'écriture directe.")
+        st.info("Ouvre ton Google Sheets et ajoute le salon manuellement pour l'instant, l'appli le lira automatiquement !")
 
 # --- LISTES DES SECTEURS ---
 options_bobo = [
