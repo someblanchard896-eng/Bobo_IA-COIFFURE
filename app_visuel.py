@@ -42,7 +42,7 @@ if menu == "🏠 Accueil":
     
     # On s'assure que la ville existe dans la DB pour éviter l'erreur
    # --- NOUVELLE SELECTION DES QUARTIERS ---
-        if v_nom == "Bobo-Dioulasso":
+   if v_nom == "Bobo-Dioulasso":
             options_bobo = [
                 "Secteur 1 (Dioulassoba)", "Secteur 2 (Dogona / Accart-ville)", "Secteur 3 (Tounouma)", 
                 "Secteur 4 (Koko)", "Secteur 5 (Kyé)", "Secteur 6 (Koua)", "Secteur 7 (Bolomakoté)", 
