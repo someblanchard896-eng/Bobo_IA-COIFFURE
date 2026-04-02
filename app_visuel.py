@@ -78,29 +78,39 @@ if menu == "🏠 Accueil Clients":
                 st.divider()
 
 # ================= PARTIE ADMIN =================
+# ================= PARTIE ADMIN (SÉCURISÉE) =================
 elif menu == "🔐 Admin Blanco":
-    st.header("Gestion Blanco Beauté")
+    st.header("🔐 Accès Restreint")
     
-    with st.form("ajout"):
-        c1, c2 = st.columns(2)
-        with c1:
-            n = st.text_input("Nom du Salon")
-            v = st.selectbox("Ville", ["Bobo-Dioulasso", "Ouagadougou"])
-            t = st.text_input("WhatsApp (ex: 70000000)")
-        with c2:
-            # On laisse l'admin taper le secteur pour être précis
-            s = st.text_input("Secteur précis (Copiez le nom exact de la liste)")
-            b = st.number_input("Budget (F CFA)", value=100)
-            
-        p = st.file_uploader("Photo", type=['jpg','png','jpeg'])
-        vid = st.file_uploader("Vidéo Pub", type=['mp4'])
+    # Demande du code secret
+    code_entre = st.text_input("Entrez votre code d'accès :", type="password")
+    
+    if code_entre == "Blanco.10":
+        st.success("Accès autorisé, Bienvenue Blanco !")
         
-        if st.form_submit_button("Valider l'ajout"):
-            st.session_state.salons_db.append({"nom":n, "ville":v, "secteur":s, "tel":t, "budget":b, "photo":p, "video":vid})
-            st.success("Salon ajouté !")
+        # --- TON CONTENU ADMIN COMMENCE ICI ---
+        with st.form("ajout"):
+            c1, c2 = st.columns(2)
+            with c1:
+                n = st.text_input("Nom du Salon")
+                v = st.selectbox("Ville", ["Bobo-Dioulasso", "Ouagadougou"])
+                t = st.text_input("WhatsApp (ex: 70000000)")
+            with c2:
+                s = st.text_input("Secteur précis")
+                b = st.number_input("Budget (F CFA)", value=100)
+            
+            p = st.file_uploader("Photo", type=['jpg','png','jpeg'])
+            vid = st.file_uploader("Vidéo Pub", type=['mp4'])
+            
+            if st.form_submit_button("Valider l'ajout"):
+                st.session_state.salons_db.append({"nom":n, "ville":v, "secteur":s, "tel":t, "budget":b, "photo":p, "video":vid})
+                st.success("Salon ajouté avec succès !")
 
-    if st.session_state.salons_db:
-        total = sum([s['budget'] for s in st.session_state.salons_db])
-        st.metric("Total des Budgets collectés", f"{total} F CFA")
-        st.write("Liste des salons :")
-        st.table([{"Nom": x['nom'], "Quartier": x['secteur'], "Budget": x['budget']} for x in st.session_state.salons_db])
+        # Affichage du budget total
+        if st.session_state.salons_db:
+            total = sum([s['budget'] for s in st.session_state.salons_db])
+            st.metric("Total des Budgets collectés", f"{total} F CFA")
+            st.table([{"Nom": x['nom'], "Quartier": x['secteur'], "Budget": x['budget']} for x in st.session_state.salons_db])
+            
+    elif code_entre != "" :
+        st.error("Code incorrect. L'accès à la gestion des budgets est réservé.")
