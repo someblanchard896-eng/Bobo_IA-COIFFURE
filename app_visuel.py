@@ -23,7 +23,7 @@ def charger_donnees():
 def enregistrer_donnees(df):
     try:
         # On tente l'enregistrement direct
-        conn.update(spreadsheet=url_gsheet, data=df)
+      conn.update(spreadsheet=url_gsheet, worksheet="Salons", data=df)
         st.success("✅ Enregistré dans le Cloud !")
     except:
         # Si Google bloque l'écriture, on affiche un message d'aide
