@@ -2,79 +2,121 @@ import streamlit as st
 from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 
-# --- CONFIGURATION ---
+# --- 1. CONFIGURATION DE LA PAGE ---
 st.set_page_config(page_title="Blanco Beauté Connect", page_icon="✨", layout="wide")
 
-# --- CONNEXION ---
+# --- 2. CONNEXION SÉCURISÉE À GOOGLE SHEETS ---
+# Utilise les secrets 'gsheets' définis dans ton tableau de bord Streamlit
 conn = st.connection("gsheets", type=GSheetsConnection)
 
 def charger_donnees():
     try:
-        # Lecture sécurisée
+        # Lecture de l'onglet 'Salons' avec le nom du fichier
         data = conn.read(spreadsheet="Base_Blanco_Beaute", worksheet="Salons", ttl=0)
         return data
-    except:
-        # Structure de secours si Google est capricieux
+    except Exception as e:
+        # Si erreur, on crée un tableau vide avec les 7 colonnes exactes
         return pd.DataFrame(columns=['nom', 'type', 'ville', 'secteur', 'tel', 'photo_url', 'revenus'])
 
 def enregistrer_donnees(df):
-    # On force la mise à jour vers Google
+    # Envoi des données vers Google Sheets
     conn.update(spreadsheet="Base_Blanco_Beaute", worksheet="Salons", data=df)
 
-# --- CHARGEMENT ---
+# --- 3. CHARGEMENT INITIAL ---
 df_actuel = charger_donnees()
 
-# --- MENU LATÉRAL ---
-menu = st.sidebar.radio("Navigation", ["🏠 Accueil", "🔐 Gestion Blanco"])
+# --- 4. MENU DE NAVIGATION ---
+st.sidebar.title("💎 Menu Blanco")
+menu = st.sidebar.radio("Navigation", ["🏠 Accueil Clients", "🔐 Gestion Blanco"])
 
 # ================= PAGE ACCUEIL (PUBLIC) =================
-if menu == "🏠 Accueil":
+if menu == "🏠 Accueil Clients":
     st.title("✨ Bienvenue chez Blanco Beauté")
-    st.subheader("Trouvez votre salon de coiffure au Burkina")
+    st.subheader("Les meilleurs salons de coiffure du Burkina")
+    st.divider()
     
     if df_actuel.empty:
-        st.info("Aucun salon n'est encore enregistré.")
+        st.info("Aucun salon n'est encore enregistré dans le système.")
     else:
-        # Affichage des salons sous forme de cartes simples
+        # Affichage des salons en liste
         for index, row in df_actuel.iterrows():
             with st.container():
-                col1, col2 = st.columns([1, 3])
+                col1, col2 = st.columns([1, 4])
                 with col2:
-                    st.markdown(f"### {row['nom']}")
-                    st.write(f"📍 {row['ville']} - {row['secteur']}")
-                    st.write(f"📞 WhatsApp : {row['tel']}")
+                    st.markdown(f"### 💈 {row['nom']}")
+                    st.write(f"📍 **Ville :** {row['ville']} | **Secteur :** {row['secteur']}")
+                    st.write(f"📞 **WhatsApp :** {row['tel']}")
                 st.divider()
 
-# ================= PAGE ADMIN (MOT DE PASSE) =================
+# ================= PAGE ADMIN (GESTION) =================
 elif menu == "🔐 Gestion Blanco":
     pwd = st.sidebar.text_input("Code secret :", type="password")
+    
     if pwd == "Blanco.10":
-        st.header("👨‍💼 Administration")
+        st.header("👨‍💼 Espace Administration")
         
         with st.expander("➕ Ajouter un nouveau Salon"):
             with st.form("ajout_salon"):
-                n = st.text_input("Nom du Salon")
-                t = st.selectbox("Type", ["Coiffure Homme", "Coiffure Femme", "Institut Beauté"])
-                v = st.selectbox("Ville", ["Bobo-Dioulasso", "Ouagadougou"])
-                s = st.text_input("Secteur (ex: Secteur 21)")
-                tel = st.text_input("WhatsApp (ex: 70600000)")
+                col_left, col_right = st.columns(2)
+                with col_left:
+                    n = st.text_input("Nom du Salon")
+                    v = st.selectbox("Ville", ["Bobo-Dioulasso", "Ouagadougou"])
+                with col_right:
+                    t = st.selectbox("Type", ["Coiffure Homme", "Coiffure Femme", "Institut Beauté", "Mariage"])
+                    tel = st.text_input("WhatsApp (ex: 70600000)")
                 
-                if st.form_submit_button("Enregistrer le Salon"):
+                # --- LISTE COMPLÈTE DES SECTEURS ---
+                if v == "Bobo-Dioulasso":
+                    liste_secteurs = [
+                        "Secteur 1 (Dioulassoba)", "Secteur 2 (Dogona)", "Secteur 2 (Accart-ville)", 
+                        "Secteur 3 (Tounouma)", "Secteur 4 (Koko)", "Secteur 10 (Accart-ville Nord)", 
+                        "Secteur 10 (Yéguéré)", "Secteur 17 (Sarfalao)", "Secteur 21 (Colma)", 
+                        "Secteur 22 (Belle-Ville)", "Secteur 25"
+                    ]
+                else:
+                    liste_secteurs = [
+                        "Ouaga 2000", "Pissy", "Tampouy", "Dassasgho", "Patte d'Oie", 
+                        "Gounghin", "Karpala", "Secteur 15", "Secteur 30"
+                    ]
+                s = st.selectbox("Choisir le Secteur", liste_secteurs)
+
+                if st.form_submit_button("🚀 Enregistrer dans le Cloud"):
                     if n and tel:
-                        # Création de la ligne avec les 7 colonnes
-                        nouveau = pd.DataFrame([{
-                            "nom": n, "type": t, "ville": v, "secteur": s, 
-                            "tel": tel, "photo_url": "", "revenus": 0
+                        # On crée la ligne avec les 7 colonnes pour Google Sheets
+                        nouveau_salon = pd.DataFrame([{
+                            "nom": n, 
+                            "type": t, 
+                            "ville": v, 
+                            "secteur": s, 
+                            "tel": tel, 
+                            "photo_url": "", 
+                            "revenus": 0
                         }])
-                        df_final = pd.concat([df_actuel, nouveau], ignore_index=True)
+                        
+                        # Fusion avec les données existantes
+                        df_final = pd.concat([df_actuel, nouveau_salon], ignore_index=True)
                         
                         try:
+                            # Tentative d'enregistrement
                             enregistrer_donnees(df_final)
-                            st.success("✅ Salon ajouté au Cloud !")
+                            st.success(f"✅ Succès ! Le salon '{n}' a été ajouté.")
                             st.balloons()
                             st.rerun()
-                        except Exception as e:
-                            st.error(f"❌ Google bloque encore : {e}")
-                            st.info("Vérifie que l'e-mail du robot est bien 'Éditeur' sur ton Google Sheets.")
+                        except Exception as error:
+                            st.error(f"❌ Erreur Google : {error}")
+                            st.info("Vérifiez que l'e-mail du robot est bien 'Éditeur' sur le fichier Google Sheets.")
+                    else:
+                        st.warning("Attention : Le nom et le téléphone sont obligatoires.")
+
+        # --- TABLEAU DE SUIVI ---
+        if not df_actuel.empty:
+            st.divider()
+            st.subheader("📊 Suivi de vos Gains")
+            # Conversion sécurisée des revenus en nombres
+            df_actuel['revenus'] = pd.to_numeric(df_actuel['revenus'], errors='coerce').fillna(0)
+            total_gains = df_actuel['revenus'].sum()
+            
+            st.metric("TOTAL COLLECTÉ", f"{total_gains} F CFA")
+            st.dataframe(df_actuel[['nom', 'ville', 'secteur', 'tel', 'revenus']], use_container_width=True)
     else:
-        st.warning("Veuillez entrer le code secret pour accéder à la gestion.")
+        st.warning("Entrez le mot de passe dans la barre latérale pour accéder à la gestion.")
