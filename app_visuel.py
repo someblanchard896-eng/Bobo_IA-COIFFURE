@@ -14,7 +14,7 @@ conn = st.connection("gsheets", type=GSheetsConnection)
 def charger_donnees():
     try:
         # On lit les 7 colonnes (A à G)
-        data = conn.read(spreadsheet=url_gsheet, ttl=0)
+        data =conn.read(spreadsheet="Base_Blanco_Beaute", worksheet="Salons", ttl=0)
         return data
     except:
         # Si le tableau est illisible, on crée une structure vide
@@ -23,7 +23,7 @@ def charger_donnees():
 def enregistrer_donnees(df):
     try:
         # On tente l'enregistrement direct
-      conn.update(spreadsheet=url_gsheet, worksheet="Salons", data=df)
+     conn.update(spreadsheet="Base_Blanco_Beaute", worksheet="Salons", data=df)
       st.success("✅ Enregistré dans le Cloud !")
     except:
         # Si Google bloque l'écriture, on affiche un message d'aide
