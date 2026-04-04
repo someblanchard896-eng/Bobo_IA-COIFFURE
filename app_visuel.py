@@ -24,7 +24,7 @@ def enregistrer_donnees(df):
     try:
         # On tente l'enregistrement direct
      conn.update(spreadsheet="Base_Blanco_Beaute", worksheet="Salons", data=df)
-      st.success("✅ Enregistré dans le Cloud !")
+     st.success("✅ Enregistré dans le Cloud !")
     except:
         # Si Google bloque l'écriture, on affiche un message d'aide
         st.error("🔒 Google bloque l'écriture directe.")
