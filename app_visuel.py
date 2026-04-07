@@ -1,115 +1,124 @@
 import streamlit as st
 import urllib.parse
-import pandas as pd
 
-# --- CONFIGURATION "WAOUH" ---
-st.set_page_config(page_title="Beauté Connect - Patron Edition", page_icon="✨", layout="wide")
+# --- CONFIGURATION ---
+st.set_page_config(page_title="Blanco Connect", page_icon="✨", layout="centered")
 
-# --- DESIGN PREMIUM ---
+# --- DESIGN ÉLÉGANT ---
 st.markdown("""
     <style>
-    .main { background-color: #0e1117; color: white; }
-    .stButton>button { width: 100%; border-radius: 20px; height: 3.5em; background: linear-gradient(45deg, #27ae60, #2ecc71); color: white; font-weight: bold; border: none; }
-    .caisse-box { background: #1f2937; padding: 20px; border-radius: 15px; border-left: 5px solid #f1c40f; margin-bottom: 25px; text-align: center; }
-    .salon-card { background: #262730; padding: 15px; border-radius: 10px; border: 1px solid #4b5563; margin-bottom: 10px; }
+    .stApp { background-color: #0e1117; color: white; }
+    .stButton>button { width: 100%; border-radius: 12px; height: 3.5em; background: linear-gradient(45deg, #27ae60, #2ecc71); color: white; font-weight: bold; border: none; }
+    .footer { text-align: center; color: gray; font-size: 12px; margin-top: 50px; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- MÉMOIRE DES GAINS (100F PAR RÉSA) ---
-if 'mon_argent' not in st.session_state:
-    st.session_state.mon_argent = 0
+# --- BASE DE DONNÉES (ADMIN) ---
+if 'base_salons' not in st.session_state:
+    st.session_state.base_salons = {"BOBO-DIOULASSO": {}, "OUAGADOUGOU": {}}
 
-# --- BASE DE DONNÉES DES VILLES ET QUARTIERS ---
-data_quartiers = {
-    "BOBO-DIOULASSO": [f"Secteur {i}" for i in range(1, 26)] + ["Sarfalao", "Yéguéré", "Accart-ville", "Colma", "Sya"],
-    "OUAGADOUGOU": [
-        "Karpala (Secteur 46)", "Ouaga 2000", "Zone 1", "Dassasgho", "Patte d'Oie", "Pissy", "Zogona", 
-        "Tampouy", "Gounghin", "Somgandé", "Larlé", "Cissin", "Koulouba", "Wemtenga", "Dagnoën", 
-        "Zone du Bois", "1200 Logements", "Kamsonghin", "Samandin", "Paspanga", "Ouidi", "Nemnin", 
-        "Tanghin", "Zone Industrielle", "Bendogo", "Kalgondin", "Nagrin", "Bassinko", "Kossodo", "Balkuy"
-    ]
-}
-
-# --- BARRE LATÉRALE (ADMIN & INFOS) ---
+# ==========================================
+# 🛡️ ZONE ADMIN (ACCÈS DISCRET)
+# ==========================================
 with st.sidebar:
-    st.image("https://cdn-icons-png.flaticon.com/512/3135/3135715.png", width=100)
-    st.title("Espace Patron")
-    st.markdown(f"### 💰 MA CAISSE\n## {st.session_state.mon_argent} F CFA")
-    st.divider()
-    admin_code = st.text_input("Code Admin", type="password")
-    if st.button("Réinitialiser Caisse") and admin_code == "0001":
-        st.session_state.mon_argent = 0
-        st.rerun()
+    st.header("⚙️ Gestion Blanco")
+    code_admin = st.text_input("Code Secret", type="password")
+    if code_admin == "Blanco.10":
+        st.success("Accès Admin Activé")
+        st.divider()
+        with st.form("Ajout Salon"):
+            v_adm = st.selectbox("Ville", ["BOBO-DIOULASSO", "OUAGADOUGOU"])
+            n_adm = st.text_input("Nom de l'établissement")
+            t_adm = st.radio("Type", ["Coiffure", "Institut"])
+            q_adm = st.text_input("Secteur / Quartier")
+            w_adm = st.text_input("WhatsApp (ex: 70000000)")
+            p_adm = st.text_input("Lien Photo (URL)")
+            v_adm_link = st.text_input("Lien Vidéo (URL)")
+            
+            if st.form_submit_button("✅ PUBLIER LE SALON"):
+                if n_adm and w_adm and q_adm:
+                    st.session_state.base_salons[v_adm][n_adm] = {
+                        "tel": w_adm, "quartier": q_adm, "type": t_adm,
+                        "photo": p_adm, "video": v_adm_link, "gains": 0
+                    }
+                    st.toast(f"Salon {n_adm} ajouté au réseau !")
+                else:
+                    st.error("Veuillez remplir les champs obligatoires.")
+        
+        # Affichage des gains (Seul l'admin voit ça ici)
+        st.divider()
+        st.subheader("📊 Comptabilité")
+        for v in st.session_state.base_salons:
+            for s, info in st.session_state.base_salons[v].items():
+                st.write(f"**{s}** : {info['gains']} F CFA")
 
-# --- CORPS DE L'APPLICATION ---
-st.title("✨ BEAUTÉ CONNECT ✨")
-st.markdown("*Le réseau n°1 de la coiffure et de la beauté au Burkina Faso*")
+# ==========================================
+# ✨ ZONE CLIENT (ACCUEIL)
+# ==========================================
+st.title("✨ BLANCO CONNECT ✨")
+st.markdown("### *Réservez votre séance de beauté*")
 
-col1, col2 = st.columns([1, 1])
-
+# 1. Choix du Client
+col1, col2 = st.columns(2)
 with col1:
-    st.subheader("📍 Localisation")
-    ville = st.selectbox("Choisir la ville", ["BOBO-DIOULASSO", "OUAGADOUGOU"])
-    quartier = st.selectbox("Choisir le Secteur / Quartier", data_quartiers[ville])
-    
-    st.subheader("🏢 Établissement")
-    type_salon = st.radio("Type d'établissement", ["Salon de Coiffure 💇‍♂️", "Institut de Beauté 💄"], horizontal=True)
-    nom_salon = st.text_input("Nom du Salon partenaire")
-    wa_salon = st.text_input("WhatsApp du Salon (ex: 70000000)")
-    
-    st.subheader("📸 Médias (Liens)")
-    url_photo = st.text_input("Lien Photo (i.ibb.co)")
-    url_video = st.text_input("Lien Vidéo (Streamable/YouTube)")
-
+    v_cl = st.selectbox("📍 Votre Ville", ["BOBO-DIOULASSO", "OUAGADOUGOU"])
 with col2:
-    st.subheader("📅 Détails de la Réservation")
-    nom_client = st.text_input("Nom de la cliente")
-    prestation = st.selectbox("Type de prestation", ["Coiffure Simple", "Mariage 💍 / Grand Événement"])
-    
-    # Date et Heure précises
-    col_date, col_heure = st.columns(2)
-    with col_date:
-        jour = st.text_input("Jour (ex: Samedi)")
-    with col_heure:
-        heure = st.text_input("Heure (ex: 10h30)")
-
-    st.divider()
-    
-    # --- LE BOUTON MAGIQUE ---
-    if st.button("🚀 CONFIRMER LA RÉSERVATION"):
-        if nom_client and jour and heure and wa_salon:
-            # Crédit de 100F pour le Patron
-            st.session_state.mon_argent += 100
-            
-            # Construction du message Royal
-            message_brut = (f"Bonjour comment allez vous, je veux une réservation pour une {prestation} "
-                            f"le {jour} à {heure} pour la cliente {nom_client} via Beauté Connect.")
-            
-            encoded_msg = urllib.parse.quote(message_brut)
-            
-            # Formatage numéro WhatsApp (+226)
-            num_clean = wa_salon.replace(" ", "").replace("+", "")
-            num_final = f"226{num_brut}" if not num_brut.startswith("226") else num_brut
-            
-            wa_link = f"https://wa.me/{num_final}?text={encoded_msg}"
-            
-            # Affichage Waouh du succès
-            st.balloons()
-            st.success(f"Réservation confirmée ! Vous avez gagné 100 F CFA.")
-            
-            # Affichage des médias si présents
-            if url_photo: st.image(url_photo, caption="Aperçu du travail")
-            if url_video: st.video(url_video)
-            
-            st.markdown(f'''
-                <a href="{wa_link}" target="_blank">
-                    <button style="width:100%; height:50px; border-radius:10px; background-color:#25D366; color:white; font-weight:bold; border:none; cursor:pointer;">
-                        📲 ENVOYER LE MESSAGE WHATSAPP AU SALON
-                    </button>
-                </a>
-                ''', unsafe_allow_html=True)
-        else:
-            st.warning("⚠️ Patron, il manque des infos pour valider les 100 F !")
+    salons_v = st.session_state.base_salons[v_cl]
+    quartiers = sorted(list(set([s['quartier'] for s in salons_v.values()]))) if salons_v else ["Aucun"]
+    q_cl = st.selectbox("🏘️ Votre Quartier/Secteur", quartiers)
 
 st.divider()
-st.caption("Beauté Connect v3.0 - Bobo & Ouaga Network")
+
+# 2. Liste des Salons filtrée
+if salons_v:
+    salons_q = {n: s for n, s in salons_v.items() if s['quartier'] == q_cl}
+    
+    if not salons_q:
+        st.info("Sélectionnez votre quartier pour voir les salons disponibles.")
+    
+    for nom, info in salons_q.items():
+        with st.container():
+            st.markdown(f"#### ⭐ {nom}")
+            # Affichage médias en "petit" comme demandé
+            c_m1, c_m2 = st.columns([1, 2])
+            with c_m1:
+                if info['photo']: st.image(info['photo'], use_container_width=True)
+                if info['video']: st.video(info['video'])
+            
+            with c_m2:
+                st.write(f"📍 {info['quartier']} | 📞 WhatsApp associé : {info['tel']}")
+                
+                # Formulaire de réservation automatique
+                nom_res = st.text_input("Votre Nom complet", key=f"n_{nom}")
+                
+                if info['type'] == "Coiffure":
+                    pres_res = st.selectbox("Prestation", ["Coiffure Simple", "Mariage 💍", "Tresses"], key=f"p_{nom}")
+                else:
+                    pres_res = st.selectbox("Prestation", ["Maquillage 💄", "Soins de visage", "Manucure"], key=f"p_{nom}")
+                
+                col_d, col_h = st.columns(2)
+                with col_d: d_res = st.text_input("Jour (ex: Samedi)", key=f"d_{nom}")
+                with col_h: h_res = st.text_input("Heure (ex: 14h)", key=f"h_{nom}")
+
+                if st.button(f"🚀 RÉSERVER CHEZ {nom.upper()}", key=f"b_{nom}"):
+                    if nom_res and d_res and h_res:
+                        # Enregistrement des 100F (invisible pour le client)
+                        st.session_state.base_salons[v_cl][nom]['gains'] += 100
+                        
+                        # Message WhatsApp Automatique
+                        texte = (f"Bonjour comment allez vous, je veux une réservation pour une {pres_res} "
+                                 f"le {d_res} à {h_res} pour la cliente {nom_res} via Beauté Connect.")
+                        
+                        num = info['tel'].replace(" ", "").replace("+", "")
+                        num_f = f"226{num}" if not num.startswith("226") else num
+                        url = f"https://wa.me/{num_f}?text={urllib.parse.quote(texte)}"
+                        
+                        st.success("Réservation prête ! Cliquez pour envoyer.")
+                        st.markdown(f'''<a href="{url}" target="_blank"><button style="background-color:#25D366; color:white; width:100%; border-radius:10px; border:none; height:45px; cursor:pointer; font-weight:bold;">📲 ENVOYER SUR WHATSAPP</button></a>''', unsafe_allow_html=True)
+                    else:
+                        st.error("⚠️ Veuillez remplir tous les champs du formulaire !")
+            st.divider()
+else:
+    st.warning("Bienvenue ! Le Patron n'a pas encore ajouté de salons dans cette ville.")
+
+st.markdown('<div class="footer">Blanco Connect © 2026 - Bobo & Ouaga Network</div>', unsafe_allow_html=True)
