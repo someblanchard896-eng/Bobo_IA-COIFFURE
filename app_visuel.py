@@ -7,7 +7,7 @@ import pandas as pd
 # --- CONFIGURATION PRESTIGE ---
 st.set_page_config(page_title="Faso Beauté | L'Excellence par Blanco", page_icon="✨", layout="centered")
 
-# --- L'ALGORITHME DE CONNEXION SÉCURISÉ (STRICTEMENT IDENTIQUE) ---
+# --- L'ALGORITHME DE CONNEXION SÉCURISÉ (STRICTEMENT CONSERVÉ) ---
 @st.cache_resource
 def connect_to_sheet():
     try:
@@ -34,43 +34,44 @@ else:
     # Lecture des données du Sheet
     df_salons = pd.DataFrame(sheet.get_all_records())
 
-# --- DESIGN "WAHOU" FIERTÉ AFRICAINE (CRÈME & OR) ---
+# --- NOUVEAU DESIGN "LUXE ÉPURÉ" (PROFESSIONNEL) ---
+# ON REMPLACE LE CRÈME PAR DU BLANC PUR ET DE L'OR
 st.markdown("""
     <style>
-    /* Fond Crème Doux et Chaleureux */
-    .stApp { background-color: #fdfaf5; color: #4a3b2a; }
+    /* Fond Blanc Pur - Professionnel */
+    .stApp { background-color: #FFFFFF; color: #2c3e50; }
     
-    /* Header avec Photo Tresses Africaines et Titre Or */
+    /* Header avec Photo Tresses Africaines et Titre Or Brossé */
     .waouh-header { 
-        background: linear-gradient(rgba(74, 59, 42, 0.4), rgba(74, 59, 42, 0.6)), url('https://images.unsplash.com/photo-1620331713531-50e5606d1945?q=80&w=1000&auto=format&fit=crop'); 
+        background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1620331713531-50e5606d1945?q=80&w=1000&auto=format&fit=crop'); 
         background-size: cover; background-position: center;
-        padding: 60px; border-radius: 0 0 40px 40px; text-align: center; color: white; margin-bottom: 30px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        padding: 60px; border-radius: 0 0 30px 30px; text-align: center; color: white; margin-bottom: 30px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
         border-bottom: 3px solid #d4af37;
     }
-    .waouh-header h1 { font-size: 55px !important; font-weight: 900 !important; color: #f1c40f !important; text-shadow: 2px 2px 5px rgba(0,0,0,0.6); margin-bottom: 10px; }
-    .waouh-header p { font-size: 20px; color: #fdfaf5; font-style: italic; }
+    .waouh-header h1 { font-size: 50px !important; font-weight: 900 !important; color: #f1c40f !important; text-shadow: 1px 1px 3px rgba(0,0,0,0.3); margin-bottom: 5px; }
+    .waouh-header p { font-size: 18px; color: #ffffff; opacity: 0.9; }
 
-    /* Cartes Salons Chaleureuses */
+    /* Cartes Salons Sobres et Claires */
     .salon-card { 
-        background: #ffffff; padding: 25px; border-radius: 25px; 
-        border: 1px solid #e9ecef; margin-bottom: 25px; 
-        box-shadow: 0 8px 18px rgba(74, 59, 42, 0.05); 
+        background: #fdfdfd; padding: 25px; border-radius: 20px; 
+        border: 1px solid #f1f1f1; margin-bottom: 25px; 
+        box-shadow: 0 5px 10px rgba(0,0,0,0.02); 
     }
     
-    /* Bouton Or (Terre de Sienne) */
+    /* Bouton Or Prestige */
     .stButton>button { 
-        border-radius: 30px; background: linear-gradient(45deg, #d4af37, #b8860b); 
-        color: white !important; font-weight: bold; border: none; height: 3.8em; width: 100%; 
-        transition: 0.3s; font-size: 16px;
-        box-shadow: 0 5px 15px rgba(212, 175, 55, 0.4);
+        border-radius: 25px; background: linear-gradient(45deg, #d4af37, #b8860b); 
+        color: white !important; font-weight: bold; border: none; height: 3.5em; width: 100%; 
+        transition: 0.2s; font-size: 16px;
+        box-shadow: 0 3px 10px rgba(212, 175, 55, 0.2);
     }
-    .stButton>button:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(212, 175, 55, 0.6); }
+    .stButton>button:hover { transform: translateY(-1px); box-shadow: 0 5px 15px rgba(212, 175, 55, 0.3); }
 
-    /* Sidebar Admin (Chaude) */
-    [data-testid="stSidebar"] { background-color: #f4eee1; border-right: 2px solid #d4af37; }
+    /* Sidebar Admin (Sobre) */
+    [data-testid="stSidebar"] { background-color: #f8f9fa; border-right: 1px solid #d4af37; }
     
-    /* Petites écritures pour les infos */
+    /* Infos en petit */
     .small-info { font-size: 14px; color: #6c757d; }
     </style>
     """, unsafe_allow_html=True)
@@ -119,30 +120,31 @@ with st.sidebar:
 # ==========================================
 # ✨ ACCUEIL CLIENT (FASO BEAUTÉ by BLANCO)
 # ==========================================
-# HEADER "WAHOU" AVEC PHOTO TRESSES ET MESSAGE ACCUEIL
+# HEADER IMPACTANT (PHOTO TRESSES + ACCUEIL CONSERVÉ)
 st.markdown("""
     <div class="waouh-header">
         <h1>Faso Beauté</h1>
-        <p><i>by Blanco</i></p>
-        <div style="background: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 10px; border: 1px dashed #f1c40f; margin-top: 20px;">
-            <p style="font-size: 16px; margin: 0; color: #fdfaf5;">Anw bèbè sô / Ne y yiki !</p>
-            <p style="font-size: 14px; margin: 0; color: #fdfaf5;">L'excellence de la beauté burkinabè, pour vous, chez vous.</p>
+        <p>by Blanco</p>
+        <div style="background: rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 10px; border: 1px dashed rgba(241, 196, 15, 0.5); margin-top: 15px;">
+            <p style="font-size: 15px; margin: 0; color: #ffffff;">Anw bèbè sô / Ne y yiki !</p>
+            <p style="font-size: 13px; margin: 0; color: #ffffff; opacity: 0.8;">L'excellence de la beauté burkinabè, pour vous, chez vous.</p>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-# Filtres
+# Filtres (Conservés)
 c1, c2 = st.columns(2)
 with c1: v_c = st.selectbox("📍 Ville de recherche", ["BOBO-DIOULASSO", "OUAGADOUGOU"])
 with c2: q_c = st.selectbox("🏘️ Quartier / Secteur", secteurs_bobo if v_c == "BOBO-DIOULASSO" else quartiers_ouaga)
 
-# Affichage des salons
+# Affichage des salons (Conservé)
 results = df_salons[(df_salons['ville'] == v_c) & (df_salons['secteur'] == q_c)]
 
 if not results.empty:
     for idx, row in results.iterrows():
         st.markdown('<div class="salon-card">', unsafe_allow_html=True)
-        st.markdown(f"<h2 style='color:#4a3b2a; text-align:center;'>✨ {row['nom du salon'].upper()}</h2>", unsafe_allow_html=True)
+        # Titre Vert Burkina (Conservé pour l'identité)
+        st.markdown(f"<h3 style='color:#1e7e34; text-align:center;'>✨ {row['nom du salon'].upper()}</h3>", unsafe_allow_html=True)
         
         col_img, col_form = st.columns([1, 1.8])
         with col_img:
@@ -152,20 +154,19 @@ if not results.empty:
         
         with col_form:
             st.markdown(f"<p class='small-info'><strong>Prestation :</strong> {row['type']}</p>", unsafe_allow_html=True)
-            st.markdown(f"<p class='small-info'><strong>Localisation :</strong> {row['secteur']}</p>", unsafe_allow_html=True)
             st.markdown(f"<p class='small-info'><strong>WhatsApp :</strong> {row['whatsapp']}</p>", unsafe_allow_html=True)
             
-            # Formulaire
+            # Formulaire (Conservé)
             n_cli = st.text_input("Votre Nom complet", key=f"n_{idx}", placeholder="Ex: Mme Sawadogo")
             rdv = st.text_input("Jour et Heure souhaitée", key=f"t_{idx}", placeholder="Ex: Samedi 14h")
             
             if st.button(f"🚀 RÉSERVER MON CRÉNEAU VIP", key=f"b_{idx}"):
                 if n_cli and rdv:
-                    # Mise à jour des revenus (Colonne 7) - Algorithme conservé
+                    # Mise à jour des revenus (Colonne 7) - Algorithme strictement conservé
                     cell_row = idx + 2
                     sheet.update_cell(cell_row, 7, int(row['revenus']) + 100)
                     
-                    # WhatsApp
+                    # WhatsApp (Conservé)
                     msg = urllib.parse.quote(f"Bonjour, je souhaite réserver une séance de {row['type']} le {rdv} pour la cliente {n_cli} via Faso Beauté.")
                     url_wa = f"https://wa.me/226{row['whatsapp']}?text={msg}"
                     
@@ -176,6 +177,7 @@ if not results.empty:
                     st.warning("⚠️ Veuillez remplir le nom et l'heure pour réserver.")
         st.markdown('</div>', unsafe_allow_html=True)
 else:
-    st.info("Aucun établissement d'exception trouvé dans ce secteur. L'Administrateur peut en ajouter dans le menu à gauche.")
+    st.info("Aucun établissement d'exception trouvé dans ce secteur. L'Administrateur peut en ajouter.")
 
+# Bas de page (Conservé)
 st.markdown("<p style='text-align:center; color:#d4af37; font-size:12px; margin-top:50px;'>Faso Beauté - Le Réseau Premium by Blanco © 2026</p>", unsafe_allow_html=True)
