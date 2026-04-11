@@ -7,7 +7,7 @@ import pandas as pd
 # --- CONFIGURATION PRESTIGE ---
 st.set_page_config(page_title="Faso Beauté | Excellence Africaine", page_icon="✨", layout="centered")
 
-# --- L'ALGORITHME DE CONNEXION (NON MODIFIÉ) ---
+# --- L'ALGORITHME DE CONNEXION (STRICTEMENT CONSERVÉ) ---
 @st.cache_resource
 def connect_to_sheet():
     try:
@@ -27,19 +27,14 @@ else:
     sheet = res
     df_salons = pd.DataFrame(sheet.get_all_records())
 
-# --- INTERFACE RÉVOLUTION ÉBÈNE (SANS RECTANGLE, SANS IMGBB) ---
+# --- INTERFACE RÉVOLUTION ÉBÈNE ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400;600&display=swap');
 
     .stApp { background-color: #ffffff; font-family: 'Poppins', sans-serif; }
     
-    /* Header Épuré : Fini le rectangle ridicule */
-    .main-title {
-        text-align: center;
-        padding: 40px 0 10px 0;
-        background: transparent;
-    }
+    .main-title { text-align: center; padding: 40px 0 10px 0; background: transparent; }
     .main-title h1 { 
         font-family: 'Playfair Display', serif; 
         font-size: 55px !important; 
@@ -48,28 +43,16 @@ st.markdown("""
         letter-spacing: -1px;
     }
     .main-title p { 
-        font-size: 14px; 
-        color: #1a1a1a; 
-        letter-spacing: 3px; 
-        text-transform: uppercase; 
-        margin-top: -5px;
-        font-weight: 600;
+        font-size: 14px; color: #1a1a1a; letter-spacing: 3px; 
+        text-transform: uppercase; margin-top: -5px; font-weight: 600;
     }
     
-    /* Phrase d'accueil stylisée */
-    .slogan-box {
-        text-align: center;
-        margin-bottom: 40px;
-    }
+    .slogan-box { text-align: center; margin-bottom: 40px; }
     .slogan-box h3 {
-        font-family: 'Playfair Display', serif;
-        font-style: italic;
-        color: #4a3b2a;
-        font-weight: 400;
-        font-size: 22px;
+        font-family: 'Playfair Display', serif; font-style: italic;
+        color: #4a3b2a; font-weight: 400; font-size: 22px;
     }
 
-    /* Cartes Salons Style Galerie Art */
     .salon-card { 
         background: #ffffff; padding: 25px; border-radius: 0px; 
         border-left: 5px solid #d4af37; margin-bottom: 35px; 
@@ -80,11 +63,9 @@ st.markdown("""
         font-family: 'Playfair Display', serif; 
         color: #000; font-size: 30px; 
         border-bottom: 1px solid #f1f1f1;
-        margin-bottom: 15px;
-        padding-bottom: 10px;
+        margin-bottom: 15px; padding-bottom: 10px;
     }
 
-    /* Bouton Signature Blanco */
     .stButton>button { 
         border-radius: 0px; background: #000; 
         color: #d4af37 !important; font-weight: 600; border: 1px solid #d4af37; 
@@ -92,17 +73,16 @@ st.markdown("""
     }
     .stButton>button:hover { background: #d4af37; color: #000 !important; }
 
-    /* Inputs */
-    .stTextInput>div>div>input { border-radius: 0px; border: none; border-bottom: 1px solid #ccc; background: transparent; }
+    .stTextInput>div>div>input, .stSelectbox>div>div>div { border-radius: 0px; border: none; border-bottom: 1px solid #ccc; background: transparent; }
     
-    /* Sidebar */
     [data-testid="stSidebar"] { background-color: #f8f8f8; border-right: 1px solid #eee; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- QUARTIERS (CONSERVÉS) ---
+# --- QUARTIERS & JOURS ---
 secteurs_bobo = [f"Secteur {i}" for i in range(1, 26)] + ["Sarfalao", "Yéguéré", "Accart-ville"]
 quartiers_ouaga = ["Karpala", "Ouaga 2000", "Patte d'Oie", "Dassasgho", "Zone 1", "Zogona", "Tampouy", "Pissy", "Gounghin"]
+jours_semaine = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"]
 
 # --- ADMINISTRATION ---
 with st.sidebar:
@@ -116,7 +96,7 @@ with st.sidebar:
                 v = st.selectbox("Ville", ["BOBO-DIOULASSO", "OUAGADOUGOU"])
                 q = st.selectbox("Secteur", secteurs_bobo if v == "BOBO-DIOULASSO" else quartiers_ouaga)
                 n = st.text_input("Nom du Salon")
-                t = st.radio("Type", ["Coiffure", "Institut"], horizontal=True)
+                t = st.radio("Type", ["Coiffure", "Institut de Beauté"], horizontal=True) # MODIFIÉ ICI
                 w = st.text_input("WhatsApp")
                 ph = st.text_input("Lien Photo")
                 vid = st.text_input("Lien Vidéo")
@@ -154,12 +134,20 @@ if not results.empty:
             if is_admin: st.metric("Caisse", f"{row['revenus']} F")
         with col_form:
             st.write(f"✨ **Spécialité : {row['type']}**")
+            
+            # Formulaire de réservation étendu
             n_cli = st.text_input("Votre Nom", key=f"n_{idx}", placeholder="Ex: Mme Sanon")
-            rdv = st.text_input("Heure souhaitée", key=f"t_{idx}", placeholder="Ex: 15h30")
+            c_jour, c_heure = st.columns(2)
+            with c_jour: jour_rdv = st.selectbox("Jour", jours_semaine, key=f"j_{idx}") # AJOUT DU JOUR
+            with c_heure: rdv = st.text_input("Heure", key=f"t_{idx}", placeholder="Ex: 15h30")
+            
             if st.button(f"RÉSERVER MON CRÉNEAU", key=f"b_{idx}"):
                 if n_cli and rdv:
+                    # Encaissage des 100 F par salon
                     sheet.update_cell(idx + 2, 7, int(row['revenus']) + 100)
-                    msg = urllib.parse.quote(f"Bonjour, réservation pour {n_cli} à {rdv} via Faso Beauté.")
+                    
+                    # Message WhatsApp complet
+                    msg = urllib.parse.quote(f"Bonjour, réservation pour {n_cli} le {jour_rdv} à {rdv} via Faso Beauté.")
                     st.markdown(f'<a href="https://wa.me/226{row["whatsapp"]}?text={msg}" target="_blank"><button style="background-color:#25D366; color:white; width:100%; border:none; height:45px; cursor:pointer; font-weight:bold;">📲 CONFIRMER SUR WHATSAPP</button></a>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 else:
