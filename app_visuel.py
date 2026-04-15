@@ -8,7 +8,7 @@ import time
 # --- CONFIGURATION PRESTIGE ---
 st.set_page_config(page_title="Faso Beauté | Excellence Africaine", page_icon="✨", layout="centered")
 
-# --- L'ALGORITHME DE CONNEXION (SÉCURISÉ CONTRE LES QUOTAS) ---
+# --- L'ALGORITHME DE CONNEXION (SÉCURISÉ) ---
 @st.cache_resource
 def connect_to_sheet():
     try:
@@ -27,11 +27,10 @@ if isinstance(res, str):
     st.stop()
 else:
     sheet = res
-    # PROTECTION ANTI-API-ERROR : On essaie de lire, sinon on attend un peu
     try:
         df_salons = pd.DataFrame(sheet.get_all_records())
     except Exception:
-        time.sleep(2) # On attend 2 secondes si Google est saturé
+        time.sleep(2)
         df_salons = pd.DataFrame(sheet.get_all_records())
 
 # --- INTERFACE RÉVOLUTION ÉBÈNE ---
@@ -53,9 +52,21 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- LISTES COMPLÈTES (BOBO & OUAGA) ---
-secteurs_bobo = [f"Secteur {i}" for i in range(1, 26)] + ["Sarfalao", "Yéguéré", "Accart-ville", "Colma", "Sya", "Bolomakoté", "Belle-Ville", "Dogona", "Bindougousso"]
-quartiers_ouaga = ["Ouaga 2000", "Karpala", "Patte d'Oie", "Dassasgho", "Zone 1", "Zogona", "Tampouy", "Pissy", "Gounghin", "Somgandé", "Balkuy", "Cissin", "Larlé", "Tanghin", "Koulouba", "Wemtenga", "Dapoya", "Paspanga", "Hamdalaye", "Saaba", "Nagrin", "Kamsontenga", "Rimkieta", "Boassa", "Kilwin", "Kamboinssin"]
+# --- LISTES COMPLÈTES (MAILLAGE TERRITORIAL) ---
+# Ajout de Bobo 2010 ici
+secteurs_bobo = [f"Secteur {i}" for i in range(1, 26)] + [
+    "Sarfalao", "Yéguéré", "Accart-ville", "Colma", "Sya", 
+    "Bolomakoté", "Belle-Ville", "Dogona", "Bindougousso", "Bobo 2010"
+]
+
+quartiers_ouaga = [
+    "Ouaga 2000", "Karpala", "Patte d'Oie", "Dassasgho", "Zone 1", 
+    "Zogona", "Tampouy", "Pissy", "Gounghin", "Somgandé", 
+    "Balkuy", "Cissin", "Larlé", "Tanghin", "Koulouba", 
+    "Wemtenga", "Dapoya", "Paspanga", "Hamdalaye", "Saaba", 
+    "Nagrin", "Kamsontenga", "Rimkieta", "Boassa", "Kilwin", "Kamboinssin"
+]
+
 jours_semaine = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"]
 
 # --- ADMINISTRATION ---
@@ -78,12 +89,14 @@ with st.sidebar:
                 if st.form_submit_button("PUBLIER DANS L'EMPIRE"):
                     if n and w:
                         sheet.append_row([v_admin, q_admin, n, t, w, ph, 0, vid])
-                        st.success(f"Enregistré !")
+                        st.success(f"Enregistré dans {q_admin} !")
                         st.rerun()
+                    else:
+                        st.warning("⚠️ Nom et WhatsApp requis.")
         with tab2:
             for idx, row in df_salons.iterrows():
                 with st.expander(f"{row['nom du salon']}"):
-                    if st.button(f"Supprimer", key=f"del_{idx}"):
+                    if st.button(f"Supprimer définitivement", key=f"del_{idx}"):
                         sheet.delete_rows(idx + 2)
                         st.rerun()
 
@@ -92,8 +105,9 @@ st.markdown("""<div class="main-title"><h1>Faso Beauté</h1><p>by Blanco</p></di
 
 c1, c2 = st.columns(2)
 with c1: v_c = st.selectbox("📍 Localité", ["BOBO-DIOULASSO", "OUAGADOUGOU"])
-with c2: q_list_client = secteurs_bobo if v_c == "BOBO-DIOULASSO" else quartiers_ouaga
-with c2: q_c = st.selectbox("🏘️ Secteur / Quartier", q_list_client)
+with c2: 
+    q_list_client = secteurs_bobo if v_c == "BOBO-DIOULASSO" else quartiers_ouaga
+    q_c = st.selectbox("🏘️ Secteur / Quartier", q_list_client)
 
 results = df_salons[(df_salons['ville'] == v_c) & (df_salons['secteur'] == q_c)]
 
