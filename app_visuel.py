@@ -79,9 +79,20 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- QUARTIERS & JOURS ---
-secteurs_bobo = [f"Secteur {i}" for i in range(1, 26)] + ["Sarfalao", "Yéguéré", "Accart-ville"]
-quartiers_ouaga = ["Karpala", "Ouaga 2000", "Patte d'Oie", "Dassasgho", "Zone 1", "Zogona", "Tampouy", "Pissy", "Gounghin"]
+# --- LISTES COMPLÈTES (BOBO & OUAGA) ---
+secteurs_bobo = [f"Secteur {i}" for i in range(1, 26)] + [
+    "Sarfalao", "Yéguéré", "Accart-ville", "Colma", "Sya", 
+    "Bolomakoté", "Belle-Ville", "Dogona", "Bindougousso"
+]
+
+quartiers_ouaga = [
+    "Ouaga 2000", "Karpala", "Patte d'Oie", "Dassasgho", "Zone 1", 
+    "Zogona", "Tampouy", "Pissy", "Gounghin", "Somgandé", 
+    "Balkuy", "Cissin", "Larlé", "Tanghin", "Koulouba", 
+    "Wemtenga", "Dapoya", "Paspanga", "Hamdalaye", "Saaba", 
+    "Nagrin", "Kamsontenga", "Rimkieta", "Boassa", "Kilwin", "Kamboinssin"
+]
+
 jours_semaine = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"]
 
 # --- ADMINISTRATION ---
@@ -94,9 +105,9 @@ with st.sidebar:
         with tab1:
             with st.form("add"):
                 v = st.selectbox("Ville", ["BOBO-DIOULASSO", "OUAGADOUGOU"])
-                q = st.selectbox("Secteur", secteurs_bobo if v == "BOBO-DIOULASSO" else quartiers_ouaga)
+                q = st.selectbox("Secteur/Quartier", secteurs_bobo if v == "BOBO-DIOULASSO" else quartiers_ouaga)
                 n = st.text_input("Nom du Salon")
-                t = st.radio("Type", ["Coiffure", "Institut de Beauté"], horizontal=True) # MODIFIÉ ICI
+                t = st.radio("Type", ["Coiffure", "Institut de Beauté"], horizontal=True)
                 w = st.text_input("WhatsApp")
                 ph = st.text_input("Lien Photo")
                 vid = st.text_input("Lien Vidéo")
@@ -121,7 +132,7 @@ st.markdown("""
 c1, c2 = st.columns(2)
 with c1: v_c = st.selectbox("📍 Localité", ["BOBO-DIOULASSO", "OUAGADOUGOU"])
 with c2: q_list = secteurs_bobo if v_c == "BOBO-DIOULASSO" else quartiers_ouaga
-with c2: q_c = st.selectbox("🏘️ Secteur", q_list)
+with c2: q_c = st.selectbox("🏘️ Secteur / Quartier", q_list)
 
 results = df_salons[(df_salons['ville'] == v_c) & (df_salons['secteur'] == q_c)]
 
@@ -134,23 +145,5 @@ if not results.empty:
             if is_admin: st.metric("Caisse", f"{row['revenus']} F")
         with col_form:
             st.write(f"✨ **Spécialité : {row['type']}**")
-            
-            # Formulaire de réservation étendu
             n_cli = st.text_input("Votre Nom", key=f"n_{idx}", placeholder="Ex: Mme Sanon")
-            c_jour, c_heure = st.columns(2)
-            with c_jour: jour_rdv = st.selectbox("Jour", jours_semaine, key=f"j_{idx}") # AJOUT DU JOUR
-            with c_heure: rdv = st.text_input("Heure", key=f"t_{idx}", placeholder="Ex: 15h30")
-            
-            if st.button(f"RÉSERVER MON CRÉNEAU", key=f"b_{idx}"):
-                if n_cli and rdv:
-                    # Encaissage des 100 F par salon
-                    sheet.update_cell(idx + 2, 7, int(row['revenus']) + 100)
-                    
-                    # Message WhatsApp complet
-                    msg = urllib.parse.quote(f"Bonjour, réservation pour {n_cli} le {jour_rdv} à {rdv} via Faso Beauté.")
-                    st.markdown(f'<a href="https://wa.me/226{row["whatsapp"]}?text={msg}" target="_blank"><button style="background-color:#25D366; color:white; width:100%; border:none; height:45px; cursor:pointer; font-weight:bold;">📲 CONFIRMER SUR WHATSAPP</button></a>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-else:
-    st.info("Aucun partenaire d'exception trouvé dans cette zone.")
-
-st.markdown("<p style='text-align:center; color:#d4af37; font-size:12px; margin-top:60px;'>Faso Beauté - Excellence Burkinabè © 2026</p>", unsafe_allow_html=True)
+            c_
