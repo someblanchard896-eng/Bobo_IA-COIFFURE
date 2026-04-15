@@ -104,34 +104,30 @@ with st.sidebar:
     if is_admin:
         tab1, tab2 = st.tabs(["Ajouter", "Gérer"])
         with tab1:
-            # CHANGEMENT CRUCIAL : La ville est choisie ICI pour forcer la mise à jour des quartiers
-            v_admin = st.selectbox("Ville cible", ["BOBO-DIOULASSO", "OUAGADOUGOU"], key="v_admin_select")
-            
-            # On définit la liste des quartiers dynamiquement
+            # Ville hors formulaire pour mise à jour dynamique
+            v_admin = st.selectbox("Ville cible", ["BOBO-DIOULASSO", "OUAGADOUGOU"], key="v_admin_key")
             q_list_admin = secteurs_bobo if v_admin == "BOBO-DIOULASSO" else quartiers_ouaga
             
-            with st.form("formulaire_ajout_salon"):
-                # Ici, q_admin affichera TOUJOURS la bonne liste car q_list_admin est calculé juste au-dessus
+            with st.form("form_add_salon"):
                 q_admin = st.selectbox("Choisir le Quartier/Secteur", q_list_admin)
                 n = st.text_input("Nom du Salon")
-                t = st.radio("Type d'établissement", ["Coiffure", "Institut de Beauté"], horizontal=True)
+                t = st.radio("Type", ["Coiffure", "Institut de Beauté"], horizontal=True)
                 w = st.text_input("WhatsApp (ex: 70000000)")
-                ph = st.text_input("Lien de la Photo")
-                vid = st.text_input("Lien de la Vidéo")
+                ph = st.text_input("Lien Photo")
+                vid = st.text_input("Lien Vidéo")
                 
                 if st.form_submit_button("PUBLIER DANS L'EMPIRE"):
                     if n and w:
                         sheet.append_row([v_admin, q_admin, n, t, w, ph, 0, vid])
-                        st.success(f"Félicitations ! {n} est maintenant en ligne à {v_admin} ({q_admin}).")
+                        st.success(f"Félicitations ! {n} est en ligne.")
                         st.rerun()
                     else:
-                        st.warning("⚠️ Le Nom et le WhatsApp sont obligatoires.")
+                        st.warning("⚠️ Nom et WhatsApp requis.")
         with tab2:
-            st.subheader("Gestion des Salons")
             for idx, row in df_salons.iterrows():
                 with st.expander(f"{row['nom du salon']}"):
                     st.write(f"💰 Caisse : {row['revenus']} F")
-                    if st.button(f"Supprimer définitivement", key=f"del_{idx}"):
+                    if st.button(f"Supprimer", key=f"del_{idx}"):
                         sheet.delete_rows(idx + 2)
                         st.rerun()
 
@@ -164,4 +160,22 @@ if not results.empty:
             if is_admin: st.metric("Caisse Salon", f"{row['revenus']} F")
         with col_form:
             st.write(f"✨ **Spécialité : {row['type']}**")
-            n_cli = st.text_input("Votre Nom",
+            
+            # Formulaire de réservation corrigé (Ligne 167 corrigée)
+            n_cli = st.text_input("Votre Nom", key=f"n_{idx}", placeholder="Ex: Mme Sanon")
+            col_j, col_h = st.columns(2)
+            with col_j: 
+                jour_rdv = st.selectbox("Jour", jours_semaine, key=f"j_{idx}")
+            with col_h: 
+                rdv_h = st.text_input("Heure", key=f"t_{idx}", placeholder="Ex: 15h30")
+            
+            if st.button(f"RÉSERVER MON CRÉNEAU", key=f"b_{idx}"):
+                if n_cli and rdv_h:
+                    sheet.update_cell(idx + 2, 7, int(row['revenus']) + 100)
+                    msg = urllib.parse.quote(f"Bonjour, réservation pour {n_cli} le {jour_rdv} à {rdv_h} via Faso Beauté.")
+                    st.markdown(f'<a href="https://wa.me/226{row["whatsapp"]}?text={msg}" target="_blank"><button style="background-color:#25D366; color:white; width:100%; border:none; height:45px; cursor:pointer; font-weight:bold;">📲 CONFIRMER SUR WHATSAPP</button></a>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+else:
+    st.info("Aucun partenaire d'exception trouvé dans cette zone.")
+
+st.markdown("<p style='text-align:center; color:#d4af37; font-size:12px; margin-top:60px;'>Faso Beauté - Excellence Burkinabè © 2026</p>", unsafe_allow_html=True)
