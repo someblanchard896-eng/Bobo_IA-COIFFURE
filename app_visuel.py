@@ -79,7 +79,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- LISTES COMPLÈTES (BOBO & OUAGA) ---
+# --- LISTES COMPLÈTES (VÉRIFIÉES ET SÉCURISÉES) ---
 secteurs_bobo = [f"Secteur {i}" for i in range(1, 26)] + [
     "Sarfalao", "Yéguéré", "Accart-ville", "Colma", "Sya", 
     "Bolomakoté", "Belle-Ville", "Dogona", "Bindougousso"
@@ -130,9 +130,11 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 c1, c2 = st.columns(2)
-with c1: v_c = st.selectbox("📍 Localité", ["BOBO-DIOULASSO", "OUAGADOUGOU"])
-with c2: q_list = secteurs_bobo if v_c == "BOBO-DIOULASSO" else quartiers_ouaga
-with c2: q_c = st.selectbox("🏘️ Secteur / Quartier", q_list)
+with c1: 
+    v_c = st.selectbox("📍 Localité", ["BOBO-DIOULASSO", "OUAGADOUGOU"])
+with c2: 
+    q_list = secteurs_bobo if v_c == "BOBO-DIOULASSO" else quartiers_ouaga
+    q_c = st.selectbox("🏘️ Secteur / Quartier", q_list)
 
 results = df_salons[(df_salons['ville'] == v_c) & (df_salons['secteur'] == q_c)]
 
@@ -146,4 +148,17 @@ if not results.empty:
         with col_form:
             st.write(f"✨ **Spécialité : {row['type']}**")
             n_cli = st.text_input("Votre Nom", key=f"n_{idx}", placeholder="Ex: Mme Sanon")
-            c_
+            col_j, col_h = st.columns(2)
+            with col_j: jour_rdv = st.selectbox("Jour", jours_semaine, key=f"j_{idx}")
+            with col_h: rdv = st.text_input("Heure", key=f"t_{idx}", placeholder="Ex: 15h30")
+            
+            if st.button(f"RÉSERVER MON CRÉNEAU", key=f"b_{idx}"):
+                if n_cli and rdv:
+                    sheet.update_cell(idx + 2, 7, int(row['revenus']) + 100)
+                    msg = urllib.parse.quote(f"Bonjour, réservation pour {n_cli} le {jour_rdv} à {rdv} via Faso Beauté.")
+                    st.markdown(f'<a href="https://wa.me/226{row["whatsapp"]}?text={msg}" target="_blank"><button style="background-color:#25D366; color:white; width:100%; border:none; height:45px; cursor:pointer; font-weight:bold;">📲 CONFIRMER SUR WHATSAPP</button></a>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+else:
+    st.info("Aucun partenaire d'exception trouvé dans cette zone.")
+
+st.markdown("<p style='text-align:center; color:#d4af37; font-size:12px; margin-top:60px;'>Faso Beauté - Excellence Burkinabè © 2026</p>", unsafe_allow_html=True)
