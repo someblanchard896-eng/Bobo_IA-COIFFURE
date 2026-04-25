@@ -52,11 +52,14 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- LISTES COMPLÈTES (MAILLAGE TERRITORIAL) ---
-# Ajout de Bobo 2010 ici
-secteurs_bobo = [f"Secteur {i}" for i in range(1, 26)] + [
-    "Sarfalao", "Yéguéré", "Accart-ville", "Colma", "Sya", 
-    "Bolomakoté", "Belle-Ville", "Dogona", "Bindougousso", "Bobo 2010"
+# --- LISTES COMPLÈTES (MAILLAGE TERRITORIAL HARMONISÉ) ---
+secteurs_bobo = [
+    "Sya", "Koko", "Secteur 3", "Secteur 4", "Secteur 5", 
+    "Bolomakoté", "Secteur 7", "Secteur 8", "Accart-ville", 
+    "Yéguéré", "Colma", "Secteur 12", "Dogona", 
+    "Bindougousso", "Secteur 15", "Secteur 16", "Sarfalao", 
+    "Secteur 18", "Secteur 19", "Secteur 20", "Secteur 21", "Secteur 22", 
+    "Bobo 2010", "Secteur 24", "Belle-Ville", "Ouezzinville"
 ]
 
 quartiers_ouaga = [
