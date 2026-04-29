@@ -6,84 +6,92 @@ import pandas as pd
 import time
 
 # --- CONFIGURATION PRESTIGE ---
-st.set_page_config(page_title="Faso Beauté | Empire Blanco", page_icon="🔱", layout="centered")
+st.set_page_config(page_title="Faso Beauté | Excellence Africaine", page_icon="✨", layout="centered")
 
-# --- CONNEXION SÉCURISÉE ---
+# --- L'ALGORITHME DE CONNEXION ---
 @st.cache_resource
 def connect_to_sheet():
     try:
         scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-        creds = Credentials.from_service_account_info(st.secrets["gcp_service_account"], scopes=scope)
-        client = gspread.authorize(creds)
-        return client.open("Base_Blanco_Beaute").sheet1
+        if "gcp_service_account" in st.secrets:
+            creds = Credentials.from_service_account_info(st.secrets["gcp_service_account"], scopes=scope)
+            client = gspread.authorize(creds)
+            return client.open("Base_Blanco_Beaute").sheet1
+        else: return "SECRET_MISSING"
     except Exception as e: return str(e)
 
 res = connect_to_sheet()
+
 if isinstance(res, str):
-    st.error(f"Erreur de connexion : {res}")
+    st.error(f"Connexion interrompue : {res}")
     st.stop()
 else:
     sheet = res
-    df_salons = pd.DataFrame(sheet.get_all_records())
+    try:
+        data = sheet.get_all_records()
+        df_salons = pd.DataFrame(data)
+    except Exception:
+        time.sleep(2)
+        df_salons = pd.DataFrame(sheet.get_all_records())
 
-# --- STYLE CSS (Fidèle à ton design Prestige) ---
+# --- INTERFACE RÉVOLUTION ÉBÈNE ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400;600&display=swap');
     .stApp { background-color: #ffffff; font-family: 'Poppins', sans-serif; }
     .main-title { text-align: center; padding: 40px 0 10px 0; }
-    .main-title h1 { font-family: 'Playfair Display', serif; font-size: 50px !important; color: #d4af37 !important; margin-bottom: 0px; }
-    .salon-card { background: #ffffff; padding: 25px; border-left: 5px solid #d4af37; margin-bottom: 35px; box-shadow: 10px 10px 30px rgba(0,0,0,0.03); }
-    .salon-name { font-family: 'Playfair Display', serif; color: #000; font-size: 28px; border-bottom: 1px solid #f1f1f1; margin-bottom: 10px; }
+    .main-title h1 { font-family: 'Playfair Display', serif; font-size: 55px !important; color: #d4af37 !important; margin-bottom: 0px; }
     .badge-elite { background-color: #d4af37; color: white; padding: 3px 10px; font-size: 12px; border-radius: 20px; font-weight: bold; }
     .price-tag { color: #1a1a1a; font-weight: 600; font-size: 14px; background: #f8f8f8; padding: 5px 10px; border-radius: 5px; border: 1px solid #eee; }
-    .stButton>button { border-radius: 0px; background: #000; color: #d4af37 !important; font-weight: 600; border: 1px solid #d4af37; width: 100%; transition: 0.4s; }
+    .salon-card { background: #ffffff; padding: 25px; border-left: 5px solid #d4af37; margin-bottom: 35px; box-shadow: 10px 10px 30px rgba(0,0,0,0.03); }
+    .salon-name { font-family: 'Playfair Display', serif; color: #000; font-size: 30px; margin-bottom: 5px; }
+    .stButton>button { border-radius: 0px; background: #000; color: #d4af37 !important; font-weight: 600; border: 1px solid #d4af37; height: 3.5em; width: 100%; transition: 0.4s; }
     .stButton>button:hover { background: #d4af37; color: #000 !important; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- LISTES DES QUARTIERS (RESTAURÉES) ---
-secteurs_bobo = ["Sya", "Koko", "Secteur 3", "Secteur 4", "Secteur 5", "Bolomakoté", "Secteur 22", "Bobo 2010", "Sarfalao", "Belle-Ville"]
-quartiers_ouaga = ["Ouaga 2000", "Karpala", "Patte d'Oie", "Dassasgho", "Zogona", "Tampouy", "Pissy", "Gounghin", "Somgandé", "Saaba"]
+# --- TES LISTES DE QUARTIERS COMPLÈTES (RESTAURÉES) ---
+secteurs_bobo = ["Sya", "Koko", "Secteur 3", "Secteur 4", "Secteur 5", "Bolomakoté", "Secteur 7", "Secteur 8", "Accart-ville", "Yéguéré", "Colma", "Secteur 12", "Dogona", "Bindougousso", "Secteur 15", "Secteur 16", "Sarfalao", "Secteur 18", "Secteur 19", "Secteur 20", "Secteur 21", "Secteur 22", "Bobo 2010", "Secteur 24", "Belle-Ville", "Ouezzinville"]
+quartiers_ouaga = ["Ouaga 2000", "Karpala", "Patte d'Oie", "Dassasgho", "Zone 1", "Zogona", "Tampouy", "Pissy", "Gounghin", "Somgandé", "Balkuy", "Cissin", "Larlé", "Tanghin", "Koulouba", "Wemtenga", "Dapoya", "Paspanga", "Hamdalaye", "Saaba", "Nagrin", "Kamsontenga", "Rimkieta", "Boassa", "Kilwin", "Kamboinssin"]
 jours_semaine = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"]
 
 # --- ADMINISTRATION ---
 with st.sidebar:
-    st.markdown("<h2 style='color:#d4af37;'>🔱 Empire Admin</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='color:#d4af37;'>🔱 Empire Blanco</h2>", unsafe_allow_html=True)
     pwd = st.text_input("Accès Admin", type="password")
     is_admin = (pwd == "Blanco.10")
-    
     if is_admin:
-        tab1, tab2, tab3 = st.tabs(["Ajouter", "Gérer", "🤖 IA Pub"])
+        tab1, tab2, tab3 = st.tabs(["Ajouter", "Finances", "🤖 IA"])
         with tab1:
-            v_admin = st.selectbox("Ville", ["BOBO-DIOULASSO", "OUAGADOUGOU"])
-            q_list = secteurs_bobo if v_admin == "BOBO-DIOULASSO" else quartiers_ouaga
-            with st.form("add_salon"):
+            v_admin = st.selectbox("Ville cible", ["BOBO-DIOULASSO", "OUAGADOUGOU"])
+            q_list_admin = secteurs_bobo if v_admin == "BOBO-DIOULASSO" else quartiers_ouaga
+            with st.form("form_add_salon"):
+                q_admin = st.selectbox("Quartier", q_list_admin)
                 n = st.text_input("Nom du Salon")
-                q = st.selectbox("Quartier", q_list)
+                t = st.radio("Type", ["Coiffure", "Institut de Beauté"], horizontal=True)
                 w = st.text_input("WhatsApp")
-                ph = st.text_input("Photo (Lien)")
-                cert = st.checkbox("Certifié par l'Empire ?")
-                p1 = st.text_input("Menu (ex: Tresses 5000F)")
+                ph = st.text_input("Photo")
+                cert = st.checkbox("Certifié ?")
+                p1 = st.text_input("Service & Prix")
                 if st.form_submit_button("PUBLIER"):
-                    sheet.append_row([v_admin, q, n, "Beauté", w, ph, 0, "", "", "", 5, 0, "OUI" if cert else "NON", p1])
-                    st.success("Publié !")
+                    # ville, secteur, nom, type, whatsapp, photo, revenus, video, photo2, photo3, avis, nb_avis, certification, menu
+                    sheet.append_row([v_admin, q_admin, n, t, w, ph, 0, "", "", "", 5, 0, "OUI" if cert else "NON", p1])
                     st.rerun()
         with tab2:
             for idx, row in df_salons.iterrows():
-                with st.expander(f"Gérer : {row['nom du salon']}"):
-                    st.write(f"Caisse actuelle : **{row.get('revenus', 0)} F**")
+                with st.expander(f"{row['nom du salon']}"):
+                    st.write(f"Caisse : **{row.get('revenus', 0)} F**")
                     if st.button(f"✅ Encaisser & Reset", key=f"pay_{idx}"):
-                        sheet.update_cell(idx + 2, 7, 0) # Colonne G
+                        sheet.update_cell(idx + 2, 7, 0)
                         st.rerun()
                     if st.button(f"Supprimer", key=f"del_{idx}"):
                         sheet.delete_rows(idx + 2)
                         st.rerun()
         with tab3:
-            st.write("Générateur de Pub IA")
-            salon_choisi = st.selectbox("Pour quel salon ?", df_salons['nom du salon'])
-            if st.button("Générer Texte TikTok"):
-                st.info(f"✨ Nouveau salon sur Faso Beauté ! Découvrez {salon_choisi}, l'excellence de l'Empire Blanco est maintenant à votre portée. Réservez vite ! #FasoBeaute #EmpireBlanco")
+            st.write("🤖 **Assistant Pub**")
+            salon_ia = st.selectbox("Salon", df_salons['nom du salon'])
+            if st.button("Générer Pub"):
+                st.info(f"✨ L'Empire s'agrandit ! {salon_ia} rejoint Faso Beauté. Le luxe à portée de main. #FasoBeaute")
 
 # --- ACCUEIL CLIENT ---
 st.markdown("""<div class="main-title"><h1>Faso Beauté</h1><p>by Blanco</p></div>""", unsafe_allow_html=True)
@@ -102,22 +110,26 @@ if not results.empty:
         badge = '<span class="badge-elite">👑 CERTIFIÉ</span>' if row.get('certification') == "OUI" else ""
         
         st.markdown(f'''<div class="salon-card">
-                        <div class="salon-name">{row["nom du salon"].upper()} {badge} <span style="float:right; color:#d4af37;">{stars}</span></div>''', unsafe_allow_html=True)
+                        <div class="salon-name">{row["nom du salon"].upper()} {badge} <span style="float:right; font-size:18px;">{stars}</span></div>''', unsafe_allow_html=True)
         
         col_img, col_form = st.columns([1, 1.5])
         with col_img:
-            st.image(row['lien photo'] if row['lien photo'] else "https://via.placeholder.com/200", use_container_width=True)
-        
+            st.image(row['lien photo'], use_container_width=True)
+            if is_admin: st.metric("Caisse", f"{row.get('revenus', 0)} F")
         with col_form:
             if row.get('menu_prix'): st.markdown(f"<span class='price-tag'>🏷️ {row['menu_prix']}</span>", unsafe_allow_html=True)
-            n_cli = st.text_input("Nom", key=f"n_{idx}")
-            t_rdv = st.selectbox("Type", ["Simple", "Mariage"], key=f"t_{idx}")
-            h_rdv = st.text_input("Heure", key=f"h_{idx}", placeholder="Ex: 16h00")
+            n_cli = st.text_input("Votre Nom", key=f"n_{idx}")
+            t_rdv = st.selectbox("Type", ["Simple", "Mariage"], key=f"type_{idx}")
+            col_j, col_h = st.columns(2)
+            with col_j: jour_rdv = st.selectbox("Jour", jours_semaine, key=f"j_{idx}")
+            with col_h: rdv_h = st.text_input("Heure", key=f"t_{idx}")
             
-            if st.button(f"RÉSERVER", key=f"b_{idx}"):
-                if n_cli and h_rdv:
+            if st.button(f"RÉSERVER MON CRÉNEAU", key=f"b_{idx}"):
+                if n_cli and rdv_h:
                     gain = 500 if t_rdv == "Mariage" else 100
                     sheet.update_cell(idx + 2, 7, int(row.get('revenus', 0)) + gain)
-                    msg = urllib.parse.quote(f"Réservation {t_rdv} pour {n_cli} à {h_rdv} via Faso Beauté.")
-                    st.markdown(f'<a href="https://wa.me/226{row["whatsapp"]}?text={msg}" target="_blank"><button style="background-color:#25D366; color:white; width:100%; border:none; height:45px; cursor:pointer; font-weight:bold;">📲 CONFIRMER SUR WHATSAPP</button></a>', unsafe_allow_html=True)
+                    msg = urllib.parse.quote(f"Réservation {t_rdv} pour {n_cli} le {jour_rdv} à {rdv_h} via Faso Beauté.")
+                    st.markdown(f'<a href="https://wa.me/226{row["whatsapp"]}?text={msg}" target="_blank"><button style="background-color:#25D366; color:white; width:100%; border:none; height:45px; font-weight:bold; cursor:pointer;">📲 CONFIRMER SUR WHATSAPP</button></a>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
+else:
+    st.info("Aucun partenaire d'exception trouvé dans cette zone.")
