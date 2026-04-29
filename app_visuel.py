@@ -6,7 +6,7 @@ import pandas as pd
 import time
 
 # --- CONFIGURATION PRESTIGE ---
-st.set_page_config(page_title="Faso Beauté | Excellence Africaine", page_icon="✨", layout="centered")
+st.set_page_config(page_title="Faso Beauté | Empire Blanco", page_icon="✨", layout="centered")
 
 # --- L'ALGORITHME DE CONNEXION ---
 @st.cache_resource
@@ -28,29 +28,31 @@ if isinstance(res, str):
 else:
     sheet = res
     try:
+        # On récupère les données et on nettoie les lignes vides
         data = sheet.get_all_records()
-        df_salons = pd.DataFrame(data)
+        df_salons = pd.DataFrame(data).dropna(how='all')
     except Exception:
         time.sleep(2)
-        df_salons = pd.DataFrame(sheet.get_all_records())
+        df_salons = pd.DataFrame(sheet.get_all_records()).dropna(how='all')
 
-# --- INTERFACE RÉVOLUTION ÉBÈNE ---
+# --- STYLE CSS (Fidèle à l'Empire Blanco) ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400;600&display=swap');
     .stApp { background-color: #ffffff; font-family: 'Poppins', sans-serif; }
     .main-title { text-align: center; padding: 40px 0 10px 0; }
     .main-title h1 { font-family: 'Playfair Display', serif; font-size: 55px !important; color: #d4af37 !important; margin-bottom: 0px; }
-    .badge-elite { background-color: #d4af37; color: white; padding: 3px 10px; font-size: 12px; border-radius: 20px; font-weight: bold; }
-    .price-tag { color: #1a1a1a; font-weight: 600; font-size: 14px; background: #f8f8f8; padding: 5px 10px; border-radius: 5px; border: 1px solid #eee; }
-    .salon-card { background: #ffffff; padding: 25px; border-left: 5px solid #d4af37; margin-bottom: 35px; box-shadow: 10px 10px 30px rgba(0,0,0,0.03); }
-    .salon-name { font-family: 'Playfair Display', serif; color: #000; font-size: 30px; margin-bottom: 5px; }
-    .stButton>button { border-radius: 0px; background: #000; color: #d4af37 !important; font-weight: 600; border: 1px solid #d4af37; height: 3.5em; width: 100%; transition: 0.4s; }
-    .stButton>button:hover { background: #d4af37; color: #000 !important; }
+    .badge-elite { background-color: #d4af37; color: white; padding: 3px 10px; font-size: 12px; border-radius: 20px; font-weight: bold; margin-left: 10px; }
+    .price-tag { color: #1a1a1a; font-weight: 600; font-size: 14px; background: #f8f8f8; padding: 5px 10px; border-radius: 5px; border: 1px solid #eee; display: inline-block; margin-bottom: 10px; }
+    .salon-card { background: #ffffff; padding: 25px; border-radius: 0px; border-left: 5px solid #d4af37; margin-bottom: 35px; box-shadow: 10px 10px 30px rgba(0,0,0,0.03); }
+    .salon-name { font-family: 'Playfair Display', serif; color: #000; font-size: 30px; border-bottom: 1px solid #f1f1f1; margin-bottom: 15px; padding-bottom: 10px; }
+    .stButton>button { border-radius: 0px; background: #000 !important; color: #d4af37 !important; font-weight: 600; border: 1px solid #d4af37 !important; height: 3.5em; width: 100%; transition: 0.4s; }
+    .stButton>button:hover { background: #d4af37 !important; color: #000 !important; }
+    .stTextInput>div>div>input, .stSelectbox>div>div>div { border-radius: 0px; border: none; border-bottom: 1px solid #ccc; background: transparent; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- TES LISTES DE QUARTIERS COMPLÈTES (RESTAURÉES) ---
+# --- TES LISTES DE QUARTIERS COMPLÈTES ---
 secteurs_bobo = ["Sya", "Koko", "Secteur 3", "Secteur 4", "Secteur 5", "Bolomakoté", "Secteur 7", "Secteur 8", "Accart-ville", "Yéguéré", "Colma", "Secteur 12", "Dogona", "Bindougousso", "Secteur 15", "Secteur 16", "Sarfalao", "Secteur 18", "Secteur 19", "Secteur 20", "Secteur 21", "Secteur 22", "Bobo 2010", "Secteur 24", "Belle-Ville", "Ouezzinville"]
 quartiers_ouaga = ["Ouaga 2000", "Karpala", "Patte d'Oie", "Dassasgho", "Zone 1", "Zogona", "Tampouy", "Pissy", "Gounghin", "Somgandé", "Balkuy", "Cissin", "Larlé", "Tanghin", "Koulouba", "Wemtenga", "Dapoya", "Paspanga", "Hamdalaye", "Saaba", "Nagrin", "Kamsontenga", "Rimkieta", "Boassa", "Kilwin", "Kamboinssin"]
 jours_semaine = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"]
@@ -63,35 +65,37 @@ with st.sidebar:
     if is_admin:
         tab1, tab2, tab3 = st.tabs(["Ajouter", "Finances", "🤖 IA"])
         with tab1:
-            v_admin = st.selectbox("Ville cible", ["BOBO-DIOULASSO", "OUAGADOUGOU"])
+            v_admin = st.selectbox("Ville cible", ["BOBO-DIOULASSO", "OUAGADOUGOU"], key="v_admin_key")
             q_list_admin = secteurs_bobo if v_admin == "BOBO-DIOULASSO" else quartiers_ouaga
             with st.form("form_add_salon"):
-                q_admin = st.selectbox("Quartier", q_list_admin)
+                q_admin = st.selectbox("Choisir le Quartier/Secteur", q_list_admin)
                 n = st.text_input("Nom du Salon")
                 t = st.radio("Type", ["Coiffure", "Institut de Beauté"], horizontal=True)
                 w = st.text_input("WhatsApp")
-                ph = st.text_input("Photo")
-                cert = st.checkbox("Certifié ?")
-                p1 = st.text_input("Service & Prix")
+                ph = st.text_input("Lien Photo Principale")
+                cert = st.checkbox("Certifié par l'Empire ?")
+                p1 = st.text_input("Service Star & Prix")
                 if st.form_submit_button("PUBLIER"):
-                    # ville, secteur, nom, type, whatsapp, photo, revenus, video, photo2, photo3, avis, nb_avis, certification, menu
-                    sheet.append_row([v_admin, q_admin, n, t, w, ph, 0, "", "", "", 5, 0, "OUI" if cert else "NON", p1])
-                    st.rerun()
+                    if n and w:
+                        sheet.append_row([v_admin, q_admin, n, t, w, ph, 0, "", "", "", 5, 0, "OUI" if cert else "NON", p1])
+                        st.success("Salon ajouté avec succès !")
+                        st.rerun()
         with tab2:
             for idx, row in df_salons.iterrows():
-                with st.expander(f"{row['nom du salon']}"):
-                    st.write(f"Caisse : **{row.get('revenus', 0)} F**")
-                    if st.button(f"✅ Encaisser & Reset", key=f"pay_{idx}"):
-                        sheet.update_cell(idx + 2, 7, 0)
-                        st.rerun()
-                    if st.button(f"Supprimer", key=f"del_{idx}"):
-                        sheet.delete_rows(idx + 2)
-                        st.rerun()
+                if row['nom du salon']:
+                    with st.expander(f"💰 {row['nom du salon']}"):
+                        st.write(f"Commission : **{row.get('revenus', 0)} F**")
+                        if st.button(f"Encaisser & Reset", key=f"pay_{idx}"):
+                            sheet.update_cell(idx + 2, 7, 0)
+                            st.rerun()
+                        if st.button(f"Supprimer définitivement", key=f"del_{idx}"):
+                            sheet.delete_rows(idx + 2)
+                            st.rerun()
         with tab3:
-            st.write("🤖 **Assistant Pub**")
+            st.write("🤖 **Assistant Pub IA**")
             salon_ia = st.selectbox("Salon", df_salons['nom du salon'])
-            if st.button("Générer Pub"):
-                st.info(f"✨ L'Empire s'agrandit ! {salon_ia} rejoint Faso Beauté. Le luxe à portée de main. #FasoBeaute")
+            if st.button("Générer"):
+                st.info(f"✨ Nouveau look chez {salon_ia} ! Découvrez l'éclat de l'Empire Blanco. #FasoBeaute")
 
 # --- ACCUEIL CLIENT ---
 st.markdown("""<div class="main-title"><h1>Faso Beauté</h1><p>by Blanco</p></div>""", unsafe_allow_html=True)
@@ -106,16 +110,28 @@ results = df_salons[(df_salons['ville'] == v_c) & (df_salons['secteur'] == q_c)]
 
 if not results.empty:
     for idx, row in results.iterrows():
+        # --- SÉCURITÉ AFFICHAGE ---
         stars = "⭐" * int(row.get('avis_moyenne', 5))
-        badge = '<span class="badge-elite">👑 CERTIFIÉ</span>' if row.get('certification') == "OUI" else ""
+        badge = '<span class="badge-elite">👑 CERTIFIÉ</span>' if str(row.get('certification', '')).upper() == "OUI" else ""
         
         st.markdown(f'''<div class="salon-card">
-                        <div class="salon-name">{row["nom du salon"].upper()} {badge} <span style="float:right; font-size:18px;">{stars}</span></div>''', unsafe_allow_html=True)
+                        <div class="salon-name">{str(row["nom du salon"]).upper()} {badge} <span style="float:right; font-size:18px;">{stars}</span></div>''', unsafe_allow_html=True)
         
         col_img, col_form = st.columns([1, 1.5])
+        
         with col_img:
-            st.image(row['lien photo'], use_container_width=True)
-            if is_admin: st.metric("Caisse", f"{row.get('revenus', 0)} F")
+            # CORRECTION ERREUR IMAGE :
+            photo_url = row.get('lien photo', '')
+            if photo_url and str(photo_url).startswith("http"):
+                try:
+                    st.image(photo_url, use_container_width=True)
+                except:
+                    st.image("https://via.placeholder.com/400x300?text=Image+Indisponible", use_container_width=True)
+            else:
+                st.image("https://via.placeholder.com/400x300?text=Blanco+Prestige", use_container_width=True)
+            
+            if is_admin: st.metric("Caisse Salon", f"{row.get('revenus', 0)} F")
+        
         with col_form:
             if row.get('menu_prix'): st.markdown(f"<span class='price-tag'>🏷️ {row['menu_prix']}</span>", unsafe_allow_html=True)
             n_cli = st.text_input("Votre Nom", key=f"n_{idx}")
@@ -129,7 +145,7 @@ if not results.empty:
                     gain = 500 if t_rdv == "Mariage" else 100
                     sheet.update_cell(idx + 2, 7, int(row.get('revenus', 0)) + gain)
                     msg = urllib.parse.quote(f"Réservation {t_rdv} pour {n_cli} le {jour_rdv} à {rdv_h} via Faso Beauté.")
-                    st.markdown(f'<a href="https://wa.me/226{row["whatsapp"]}?text={msg}" target="_blank"><button style="background-color:#25D366; color:white; width:100%; border:none; height:45px; font-weight:bold; cursor:pointer;">📲 CONFIRMER SUR WHATSAPP</button></a>', unsafe_allow_html=True)
+                    st.markdown(f'<a href="https://wa.me/226{row["whatsapp"]}?text={msg}" target="_blank"><button style="background-color:#25D366; color:white; width:100%; border:none; height:45px; cursor:pointer; font-weight:bold;">📲 CONFIRMER SUR WHATSAPP</button></a>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 else:
     st.info("Aucun partenaire d'exception trouvé dans cette zone.")
