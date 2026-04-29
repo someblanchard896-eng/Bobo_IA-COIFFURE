@@ -6,9 +6,9 @@ import pandas as pd
 import time
 
 # --- CONFIGURATION PRESTIGE ---
-st.set_page_config(page_title="Faso Beauté | L'Éclat du Faso", page_icon="✨", layout="centered")
+st.set_page_config(page_title="Faso Beauté | Empire Blanco", page_icon="🔱", layout="centered")
 
-# --- CONNEXION GOOGLE SHEETS ---
+# --- CONNEXION SÉCURISÉE ---
 @st.cache_resource
 def connect_to_sheet():
     try:
@@ -18,86 +18,106 @@ def connect_to_sheet():
         return client.open("Base_Blanco_Beaute").sheet1
     except Exception as e: return str(e)
 
-sheet = connect_to_sheet()
+res = connect_to_sheet()
+if isinstance(res, str):
+    st.error(f"Erreur de connexion : {res}")
+    st.stop()
+else:
+    sheet = res
+    df_salons = pd.DataFrame(sheet.get_all_records())
 
-def load_data():
-    data = sheet.get_all_records()
-    return pd.DataFrame(data)
-
-df_salons = load_data()
-
-# --- DESIGN CSS (Version Luxe) ---
+# --- STYLE CSS (Fidèle à ton design Prestige) ---
 st.markdown("""
     <style>
-    .stApp { background-color: #ffffff; }
-    .salon-card { border: 1px solid #eee; padding: 20px; border-radius: 5px; margin-bottom: 20px; border-left: 5px solid #d4af37; }
-    .gold-text { color: #d4af37; font-weight: bold; }
-    .stButton>button { background-color: #000; color: #d4af37; border: 1px solid #d4af37; }
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400;600&display=swap');
+    .stApp { background-color: #ffffff; font-family: 'Poppins', sans-serif; }
+    .main-title { text-align: center; padding: 40px 0 10px 0; }
+    .main-title h1 { font-family: 'Playfair Display', serif; font-size: 50px !important; color: #d4af37 !important; margin-bottom: 0px; }
+    .salon-card { background: #ffffff; padding: 25px; border-left: 5px solid #d4af37; margin-bottom: 35px; box-shadow: 10px 10px 30px rgba(0,0,0,0.03); }
+    .salon-name { font-family: 'Playfair Display', serif; color: #000; font-size: 28px; border-bottom: 1px solid #f1f1f1; margin-bottom: 10px; }
+    .badge-elite { background-color: #d4af37; color: white; padding: 3px 10px; font-size: 12px; border-radius: 20px; font-weight: bold; }
+    .price-tag { color: #1a1a1a; font-weight: 600; font-size: 14px; background: #f8f8f8; padding: 5px 10px; border-radius: 5px; border: 1px solid #eee; }
+    .stButton>button { border-radius: 0px; background: #000; color: #d4af37 !important; font-weight: 600; border: 1px solid #d4af37; width: 100%; transition: 0.4s; }
+    .stButton>button:hover { background: #d4af37; color: #000 !important; }
     </style>
     """, unsafe_allow_html=True)
 
+# --- LISTES DES QUARTIERS (RESTAURÉES) ---
+secteurs_bobo = ["Sya", "Koko", "Secteur 3", "Secteur 4", "Secteur 5", "Bolomakoté", "Secteur 22", "Bobo 2010", "Sarfalao", "Belle-Ville"]
+quartiers_ouaga = ["Ouaga 2000", "Karpala", "Patte d'Oie", "Dassasgho", "Zogona", "Tampouy", "Pissy", "Gounghin", "Somgandé", "Saaba"]
+jours_semaine = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"]
+
 # --- ADMINISTRATION ---
 with st.sidebar:
-    st.title("🔱 Admin Empire")
-    pwd = st.text_input("Code Secret", type="password")
-    if pwd == "Blanco.10":
-        st.success("Accès Autorisé")
-        if st.button("🗑️ Nettoyer le Cache"):
-            st.cache_resource.clear()
-            st.rerun()
+    st.markdown("<h2 style='color:#d4af37;'>🔱 Empire Admin</h2>", unsafe_allow_html=True)
+    pwd = st.text_input("Accès Admin", type="password")
+    is_admin = (pwd == "Blanco.10")
+    
+    if is_admin:
+        tab1, tab2, tab3 = st.tabs(["Ajouter", "Gérer", "🤖 IA Pub"])
+        with tab1:
+            v_admin = st.selectbox("Ville", ["BOBO-DIOULASSO", "OUAGADOUGOU"])
+            q_list = secteurs_bobo if v_admin == "BOBO-DIOULASSO" else quartiers_ouaga
+            with st.form("add_salon"):
+                n = st.text_input("Nom du Salon")
+                q = st.selectbox("Quartier", q_list)
+                w = st.text_input("WhatsApp")
+                ph = st.text_input("Photo (Lien)")
+                cert = st.checkbox("Certifié par l'Empire ?")
+                p1 = st.text_input("Menu (ex: Tresses 5000F)")
+                if st.form_submit_button("PUBLIER"):
+                    sheet.append_row([v_admin, q, n, "Beauté", w, ph, 0, "", "", "", 5, 0, "OUI" if cert else "NON", p1])
+                    st.success("Publié !")
+                    st.rerun()
+        with tab2:
+            for idx, row in df_salons.iterrows():
+                with st.expander(f"Gérer : {row['nom du salon']}"):
+                    st.write(f"Caisse actuelle : **{row.get('revenus', 0)} F**")
+                    if st.button(f"✅ Encaisser & Reset", key=f"pay_{idx}"):
+                        sheet.update_cell(idx + 2, 7, 0) # Colonne G
+                        st.rerun()
+                    if st.button(f"Supprimer", key=f"del_{idx}"):
+                        sheet.delete_rows(idx + 2)
+                        st.rerun()
+        with tab3:
+            st.write("Générateur de Pub IA")
+            salon_choisi = st.selectbox("Pour quel salon ?", df_salons['nom du salon'])
+            if st.button("Générer Texte TikTok"):
+                st.info(f"✨ Nouveau salon sur Faso Beauté ! Découvrez {salon_choisi}, l'excellence de l'Empire Blanco est maintenant à votre portée. Réservez vite ! #FasoBeaute #EmpireBlanco")
 
-# --- ACCUEIL ---
-st.markdown("<h1 style='text-align:center; color:#d4af37;'>FASO BEAUTÉ</h1>", unsafe_allow_html=True)
+# --- ACCUEIL CLIENT ---
+st.markdown("""<div class="main-title"><h1>Faso Beauté</h1><p>by Blanco</p></div>""", unsafe_allow_html=True)
 
-v_c = st.selectbox("📍 Ville", ["OUAGADOUGOU", "BOBO-DIOULASSO"])
-q_c = st.text_input("🏘️ Quartier (ex: Ouaga 2000, Secteur 22)")
+c1, c2 = st.columns(2)
+with c1: v_c = st.selectbox("📍 Localité", ["BOBO-DIOULASSO", "OUAGADOUGOU"])
+with c2: 
+    q_list_client = secteurs_bobo if v_c == "BOBO-DIOULASSO" else quartiers_ouaga
+    q_c = st.selectbox("🏘️ Secteur / Quartier", q_list_client)
 
-results = df_salons[(df_salons['ville'] == v_c) & (df_salons['secteur'].str.contains(q_c, case=False))]
+results = df_salons[(df_salons['ville'] == v_c) & (df_salons['secteur'] == q_c)]
 
 if not results.empty:
     for idx, row in results.iterrows():
-        # Ligne réelle dans Google Sheets (index + 2 car index 0 = ligne 2)
-        sheet_row = idx + 2 
+        stars = "⭐" * int(row.get('avis_moyenne', 5))
+        badge = '<span class="badge-elite">👑 CERTIFIÉ</span>' if row.get('certification') == "OUI" else ""
         
-        st.markdown(f'<div class="salon-card">', unsafe_allow_html=True)
-        col1, col2 = st.columns([1, 1.5])
+        st.markdown(f'''<div class="salon-card">
+                        <div class="salon-name">{row["nom du salon"].upper()} {badge} <span style="float:right; color:#d4af37;">{stars}</span></div>''', unsafe_allow_html=True)
         
-        with col1:
-            st.image(row['lien photo'] if row['lien photo'] else "https://via.placeholder.com/150")
-            # --- PORTFOLIO DYNAMIQUE ---
-            p_col1, p_col2 = st.columns(2)
-            if row.get('photo_2'): p_col1.image(row['photo_2'])
-            if row.get('photo_3'): p_col2.image(row['photo_3'])
+        col_img, col_form = st.columns([1, 1.5])
+        with col_img:
+            st.image(row['lien photo'] if row['lien photo'] else "https://via.placeholder.com/200", use_container_width=True)
         
-        with col2:
-            st.subheader(row['nom du salon'])
-            # --- SYSTÈME DE NOTES ---
-            note = row.get('avis_moyenne', 5)
-            st.markdown(f"<span class='gold-text'>{'⭐' * int(note)} ({row.get('nb_avis', 0)} avis)</span>", unsafe_allow_html=True)
+        with col_form:
+            if row.get('menu_prix'): st.markdown(f"<span class='price-tag'>🏷️ {row['menu_prix']}</span>", unsafe_allow_html=True)
+            n_cli = st.text_input("Nom", key=f"n_{idx}")
+            t_rdv = st.selectbox("Type", ["Simple", "Mariage"], key=f"t_{idx}")
+            h_rdv = st.text_input("Heure", key=f"h_{idx}", placeholder="Ex: 16h00")
             
-            # --- FONCTIONNALITÉ : NOTER (Calcul automatique) ---
-            with st.expander("⭐ Noter ce salon"):
-                new_grade = st.select_slider("Ma note", options=[1, 2, 3, 4, 5], key=f"grade_{idx}")
-                if st.button("Valider la note", key=f"btn_grade_{idx}"):
-                    old_nb = int(row.get('nb_avis', 0))
-                    old_avg = float(row.get('avis_moyenne', 5))
-                    # Algorithme de moyenne mobile
-                    new_nb = old_nb + 1
-                    new_avg = ((old_avg * old_nb) + new_grade) / new_nb
-                    
-                    # Mise à jour Google Sheets (Colonnes K et L)
-                    sheet.update_cell(sheet_row, 11, round(new_avg, 1))
-                    sheet.update_cell(sheet_row, 12, new_nb)
-                    st.success("Note enregistrée !")
-                    st.rerun()
-
-            # --- RÉSERVATION ---
-            if st.button(f"RÉSERVER", key=f"res_{idx}"):
-                # Mise à jour Revenus (Colonne G)
-                nouveau_revenu = int(row.get('revenus', 0)) + 500 # Simule un acompte
-                sheet.update_cell(sheet_row, 7, nouveau_revenu)
-                
-                msg = urllib.parse.quote(f"Bonjour, je souhaite réserver au salon {row['nom du salon']} via Faso Beauté.")
-                st.markdown(f'<a href="https://wa.me/226{row["whatsapp"]}?text={msg}"><button style="width:100%; background-color:#25D366; color:white; border:none; padding:10px;">📲 CONFIRMER WHATSAPP</button></a>', unsafe_allow_html=True)
-        
+            if st.button(f"RÉSERVER", key=f"b_{idx}"):
+                if n_cli and h_rdv:
+                    gain = 500 if t_rdv == "Mariage" else 100
+                    sheet.update_cell(idx + 2, 7, int(row.get('revenus', 0)) + gain)
+                    msg = urllib.parse.quote(f"Réservation {t_rdv} pour {n_cli} à {h_rdv} via Faso Beauté.")
+                    st.markdown(f'<a href="https://wa.me/226{row["whatsapp"]}?text={msg}" target="_blank"><button style="background-color:#25D366; color:white; width:100%; border:none; height:45px; cursor:pointer; font-weight:bold;">📲 CONFIRMER SUR WHATSAPP</button></a>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
